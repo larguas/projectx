@@ -121,6 +121,7 @@ class Exercise(TimestampedModel, UUIDModel):
     class MovementType(models.TextChoices):
         COMPOUND = "compound", "Polyarticulaire"
         ISOLATION = "isolation", "Monoarticulaire"
+        ISOMETRIC = "isometric", "Isométrique"
 
     name = models.CharField("nom", max_length=200)
     description = models.TextField("description", blank=True)
