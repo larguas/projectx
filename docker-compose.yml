@@ -1,0 +1,36 @@
+# Services d'infrastructure du backend (Postgres + Redis).
+# Les identifiants doivent rester cohérents avec backend/.env.example.
+services:
+  postgres:
+    image: postgres:16
+    container_name: emg-postgres
+    environment:
+      POSTGRES_DB: emg
+      POSTGRES_USER: emg
+      POSTGRES_PASSWORD: emg
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U emg -d emg"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: emg-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
+  redisdata:
