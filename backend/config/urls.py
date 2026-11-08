@@ -22,6 +22,7 @@ urlpatterns = [
     path("api/v1/exercises/", include("apps.exercises.urls")),
     path("api/v1/muscle-groups/", include("apps.exercises.group_urls")),
     path("api/v1/muscles/", include("apps.exercises.muscle_urls")),
+    path("api/v1/workouts/", include("apps.workouts.urls")),
     # Contrat OpenAPI versionné dans le repo (décision n°14) : `make schema`.
     path(
         "api/schema/",
