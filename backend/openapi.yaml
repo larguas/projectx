@@ -412,6 +412,160 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/athletes/{athlete_pk}/calibrations/:
+    get:
+      operationId: athletes_calibrations_list
+      description: |-
+        Calibrations d'un sportif (``GET /athletes/{id}/calibrations/``).
+
+        404 si le profil est inconnu ou non couvert par un grant actif au scope
+        ``setups:read`` (même convention que les autres routes imbriquées). Filtres
+        optionnels : ``setup`` (uuid de la version), ``type`` (``mvc`` /
+        ``rest_baseline``), ``applicable`` (``true``/``false`` — non invalidée et
+        non expirée ; le rattachement au setup d'une séance relève du service
+        ``applicable_calibrations``, pas d'un filtre de liste). La lecture par un
+        non-propriétaire est tracée (``calibration.listed``).
+      parameters:
+      - in: path
+        name: athlete_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - athletes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCalibrationList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/athletes/{athlete_pk}/setups/current/:
+    get:
+      operationId: athletes_setups_current_list
+      description: |-
+        Versions courantes des setups d'un sportif (``GET /athletes/{id}/setups/current/``).
+
+        404 si le profil est inconnu ou non couvert par un grant actif au scope
+        ``setups:read`` (même convention que le détail du profil, feature 03). La
+        lecture par un non-propriétaire est tracée (``setup.listed``).
+      parameters:
+      - in: path
+        name: athlete_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - athletes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSensorSetupList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/athletes/{id}/:
     get:
       operationId: athletes_retrieve
@@ -1460,6 +1614,82 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/calibrations/{id}/invalidate/:
+    post:
+      operationId: calibrations_invalidate
+      description: |-
+        Invalidation d'une calibration (``POST /calibrations/{id}/invalidate/``).
+
+        Lisible si le setup rattaché est lisible (même règle : scope ``setups:read``
+        sur le profil du sportif) ; 404 sinon, sans révéler l'existence. L'écriture
+        est contrôlée en service (scope ``setups:write``). L'invalidation est
+        irréversible et TRACÉE pour tous les acteurs (mutation sensible — pas
+        seulement les lectures non propriétaire) : événement ``calibration.invalidated``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - calibrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvalidateCalibrationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvalidateCalibrationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvalidateCalibrationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Calibration'
           description: ''
         '400':
           description: Erreur de validation.
@@ -2711,6 +2941,679 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedMuscleList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/muscles/{muscle_pk}/placement-guide/:
+    get:
+      operationId: muscles_placement_guide
+      description: |-
+        Guide de placement d'un muscle (``GET /muscles/{id}/placement-guide/``).
+
+        Catalogue en lecture seule (comme les muscles, feature 05 — aucun profil
+        sportif rattaché, donc pas de contrôle d'accès par grant) ; 404 si le
+        muscle ou le guide n'existe pas. L'image est servie en URL relative via
+        ``default_storage`` (jamais de bytes bruts).
+      parameters:
+      - in: path
+        name: muscle_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - muscles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlacementGuide'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/setups/:
+    get:
+      operationId: setups_list
+      description: Liste des setups visibles + création d'un setup pour un sportif.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - setups
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSensorSetupList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: setups_create
+      description: Liste des setups visibles + création d'un setup pour un sportif.
+      tags:
+      - setups
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorSetup'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/setups/{id}/:
+    get:
+      operationId: setups_retrieve
+      description: |-
+        Détail d'un setup visible + mise à jour / suppression selon les droits.
+
+        PATCH (``name``, ``notes``) et DELETE sont refusés en service si le setup
+        est utilisé par une séance (``setup_frozen``, 409) — la double vérification
+        modèle passe par ``save()`` -> ``assert_editable``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - setups
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorSetup'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: setups_partial_update
+      description: |-
+        Détail d'un setup visible + mise à jour / suppression selon les droits.
+
+        PATCH (``name``, ``notes``) et DELETE sont refusés en service si le setup
+        est utilisé par une séance (``setup_frozen``, 409) — la double vérification
+        modèle passe par ``save()`` -> ``assert_editable``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - setups
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorSetup'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: setups_destroy
+      description: |-
+        Détail d'un setup visible + mise à jour / suppression selon les droits.
+
+        PATCH (``name``, ``notes``) et DELETE sont refusés en service si le setup
+        est utilisé par une séance (``setup_frozen``, 409) — la double vérification
+        modèle passe par ``save()`` -> ``assert_editable``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - setups
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/setups/{id}/channels/:
+    get:
+      operationId: setups_channels_list
+      description: |-
+        Canaux d'un setup : lecture (GET) et remplacement ATOMIQUE (PUT).
+
+        Le corps de la demande est ``{"channels": [...]}`` — liste COMPLÈTE des
+        canaux (doublons ``(device, channel_id)`` refusés en validation ; tous les
+        champs détaillés optionnels — mode simple). Deux formats d'envoi sont
+        acceptés : JSON, ou multipart avec des clés indexées
+        ``channels[i][champ]`` (seul le format qui permet d'uploader la photo de
+        chaque canal) ; les deux convergent vers le même sérialiseur. Le niveau de
+        détail du setup est recalculé en service après le remplacement.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - setups
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSetupChannelList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: setups_channels_replace
+      description: |-
+        Canaux d'un setup : lecture (GET) et remplacement ATOMIQUE (PUT).
+
+        Le corps de la demande est ``{"channels": [...]}`` — liste COMPLÈTE des
+        canaux (doublons ``(device, channel_id)`` refusés en validation ; tous les
+        champs détaillés optionnels — mode simple). Deux formats d'envoi sont
+        acceptés : JSON, ou multipart avec des clés indexées
+        ``channels[i][champ]`` (seul le format qui permet d'uploader la photo de
+        chaque canal) ; les deux convergent vers le même sérialiseur. Le niveau de
+        détail du setup est recalculé en service après le remplacement.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - setups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetChannelsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetChannelsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetChannelsRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSetupChannelList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/setups/{id}/new-version/:
+    post:
+      operationId: setups_new_version
+      description: |-
+        Nouvelle version d'un setup (``POST .../new-version/``).
+
+        Fonctionne sur un setup UTILISÉ (c'est le seul moyen de le modifier) : la
+        version source n'est jamais sauvegardée, seulement basculée en
+        ``is_current=False`` par une mise à jour en base ciblée.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - setups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewVersionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NewVersionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NewVersionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorSetup'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/setups/compare/:
+    get:
+      operationId: setups_compare
+      description: |-
+        Comparabilité de deux setups (``GET /setups/compare/?a={id}&b={id}``).
+
+        Lecture pure : le contrôle d'accès est fait ICI (pas en service) — un setup
+        introuvable OU non lisible par le demandeur compte comme absent, et le
+        niveau renvoyé est ``unknown`` : l'existence d'un setup non visible n'est
+        jamais révélée. Les paramètres mal formés sont une erreur de demande (400).
+      parameters:
+      - in: query
+        name: a
+        schema:
+          type: string
+          format: uuid
+        description: Premier setup.
+      - in: query
+        name: b
+        schema:
+          type: string
+          format: uuid
+        description: Second setup.
+      tags:
+      - setups
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupComparison'
           description: ''
         '400':
           description: Erreur de validation.
@@ -4043,6 +4946,91 @@ components:
     BlankEnum:
       enum:
       - ''
+    Calibration:
+      type: object
+      description: |-
+        Calibration (lecture) ; ``applicable`` est calculé pour le moment courant.
+
+        Rattachée à une version PRÉCISE d'un setup : les références ``setup`` et
+        ``setup_channel`` sont compactes (le lecteur a déjà accès au setup lui-même
+        — même règle d'accès, scope ``setups:read`` sur le profil rattaché).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        athlete:
+          allOf:
+          - $ref: '#/components/schemas/SetupsAthleteReference'
+          readOnly: true
+        setup:
+          allOf:
+          - $ref: '#/components/schemas/SetupReference'
+          readOnly: true
+        setup_channel:
+          allOf:
+          - $ref: '#/components/schemas/SetupChannelReference'
+          readOnly: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
+        values:
+          readOnly: true
+          title: Valeurs
+          description: 'JSON : mvc_rms, fenêtre, paramètres utilisés (ex. {"mvc_rms":
+            42.5}).'
+        algorithm_version:
+          type: string
+          readOnly: true
+          title: Version d'algorithme
+        valid_from:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Valide depuis
+        valid_until:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Valide jusqu'à
+        invalidated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Invalidée le
+        invalidation_reason:
+          type: string
+          readOnly: true
+          title: Motif d'invalidation
+        applicable:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - algorithm_version
+      - applicable
+      - athlete
+      - created_at
+      - id
+      - invalidated_at
+      - invalidation_reason
+      - setup
+      - setup_channel
+      - type
+      - updated_at
+      - valid_from
+      - valid_until
+      - values
     CheckStatus:
       type: object
       properties:
@@ -4100,6 +5088,14 @@ components:
           maxLength: 200
         bio:
           type: string
+    DetailLevelEnum:
+      enum:
+      - simple
+      - detailed
+      type: string
+      description: |-
+        * `simple` - Simple
+        * `detailed` - Détaillé
     Device:
       type: object
       description: Capteur ; ``owner_email`` est uniquement renseigné pour le propriétaire.
@@ -4321,6 +5317,47 @@ components:
       - manufacturer
       - name
       - protocol_version
+    DeviceModelReference:
+      type: object
+      description: Référence compacte d'un modèle de capteur (``id``, fabriquant,
+        nom).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        manufacturer:
+          type: string
+          readOnly: true
+          title: Fabriquant
+        name:
+          type: string
+          readOnly: true
+          title: Nom du modèle
+      required:
+      - id
+      - manufacturer
+      - name
+    DeviceReference:
+      type: object
+      description: Référence compacte d'un capteur (``id``, nom, modèle).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+        device_model:
+          allOf:
+          - $ref: '#/components/schemas/DeviceModelReference'
+          readOnly: true
+      required:
+      - device_model
+      - id
+      - name
     DeviceRequest:
       type: object
       description: Capteur ; ``owner_email`` est uniquement renseigné pour le propriétaire.
@@ -4566,6 +5603,32 @@ components:
       description: |-
         * `ok` - ok
         * `degraded` - degraded
+    InvalidateCalibrationRequest:
+      type: object
+      description: |-
+        Invalidation d'une calibration (``POST /calibrations/{id}/invalidate/``).
+
+        ``reason`` est optionnel mais recommandé ; l'invalidation est irréversible
+        côté API (pas de réactivation : on crée une nouvelle calibration).
+      properties:
+        reason:
+          type: string
+          default: ''
+          maxLength: 300
+    LevelEnum:
+      enum:
+      - identical
+      - equivalent
+      - approximate
+      - different
+      - unknown
+      type: string
+      description: |-
+        * `identical` - identical
+        * `equivalent` - equivalent
+        * `approximate` - approximate
+        * `different` - different
+        * `unknown` - unknown
     LoginRequest:
       type: object
       description: 'Connexion par email (``USERNAME_FIELD``) : renvoie la paire access
@@ -4680,6 +5743,39 @@ components:
       - code
       - id
       - name
+    MuscleReference:
+      type: object
+      description: Référence compacte d'un muscle du catalogue (``id``, ``code``,
+        ``name``).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+      required:
+      - code
+      - id
+      - name
+    NewVersionRequest:
+      type: object
+      description: |-
+        Nouvelle version d'un setup (``POST /api/v1/setups/{id}/new-version/``).
+
+        ``placement_unchanged`` (défaut ``False``) : ``True`` quand seul un détail
+        non physique change (nom, notes) — les calibrations de la version
+        précédente sont alors rattachées à la nouvelle version. Sinon elles restent
+        liées à l'ancienne (une MVC n'a de sens que pour un placement donné).
+      properties:
+        placement_unchanged:
+          type: boolean
+          default: false
     PaginatedAccessGrantList:
       type: object
       required:
@@ -4726,6 +5822,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AthleteProfile'
+    PaginatedCalibrationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Calibration'
     PaginatedCoachProfileList:
       type: object
       required:
@@ -4887,6 +6006,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Muscle'
+    PaginatedSensorSetupList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorSetup'
+    PaginatedSetupChannelList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SetupChannel'
     PaginatedTeamList:
       type: object
       required:
@@ -5146,6 +6311,43 @@ components:
           maxLength: 200
         notes:
           type: string
+    PlacementGuide:
+      type: object
+      description: |-
+        Guide de placement d'un muscle (lecture) ; l'image est servie en URL
+        relative via ``default_storage`` (jamais de bytes bruts).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        muscle:
+          allOf:
+          - $ref: '#/components/schemas/MuscleReference'
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+          title: Titre
+        instructions:
+          type: string
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+          title: Référence
+          description: Référence citée du guide (ex. recommandations SENIAM).
+        image:
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+      - id
+      - image
+      - instructions
+      - muscle
+      - reference
+      - title
     RefreshRequest:
       type: object
       description: |-
@@ -5194,6 +6396,293 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WorkoutExerciseInputRequest'
+    SensorSetup:
+      type: object
+      description: |-
+        Setup de placement (lecture) ; ``editable`` est calculé pour le courant.
+
+        ``created_by`` n'est JAMAIS exposé (donnée d'audit — l'accès au setup est
+        l'accès au sportif rattaché). ``is_used`` expose l'état figé (point
+        d'extension unique de la feature 06) sans exposer le marqueur interne
+        ``used_at``.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        athlete:
+          allOf:
+          - $ref: '#/components/schemas/SetupsAthleteReference'
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+        version:
+          type: integer
+          readOnly: true
+          default: 1
+        parent:
+          type: string
+          format: uuid
+          readOnly: true
+        placement_inherited_from_parent:
+          type: boolean
+          readOnly: true
+          title: Placement hérité de la version précédente
+          description: 'True si cette version a été créée avec ``placement_unchanged=True``
+            : le placement est physiquement identique à la version parente. Base du
+            niveau ``identical`` du service de comparaison.'
+        detail_level:
+          allOf:
+          - $ref: '#/components/schemas/DetailLevelEnum'
+          readOnly: true
+          title: Niveau de détail
+        is_current:
+          type: boolean
+          readOnly: true
+          title: Version courante
+        is_used:
+          type: boolean
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/SetupChannel'
+          readOnly: true
+        editable:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - athlete
+      - channels
+      - created_at
+      - detail_level
+      - editable
+      - id
+      - is_current
+      - is_used
+      - name
+      - notes
+      - parent
+      - placement_inherited_from_parent
+      - updated_at
+      - version
+    SetChannelsRequest:
+      type: object
+      description: |-
+        Remplacement de la liste des canaux d'un setup (``PUT .../channels/``).
+
+        ``channels`` est la liste COMPLÈTE : les canaux existants sont supprimés et
+        les nouveaux créés atomiquement en service. Une liste vide est autorisée
+        (setup sans canal déclaré). Les doublons ``(device, channel_id)`` sont
+        refusés ici ; le niveau de détail effectif est recalculé ensuite en service
+        (forcé à ``simple`` si aucun champ détaillé n'est renseigné).
+      properties:
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/SetupChannelInputRequest'
+    SetupChannel:
+      type: object
+      description: |-
+        Canal d'un setup (lecture) : muscle et capteur en références compactes.
+
+        La photo est servie en URL relative via ``default_storage`` (jamais de
+        bytes bruts dans la réponse).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        device:
+          allOf:
+          - $ref: '#/components/schemas/DeviceReference'
+          readOnly: true
+        channel_id:
+          type: integer
+          readOnly: true
+          title: Canal du capteur
+        muscle:
+          allOf:
+          - $ref: '#/components/schemas/MuscleReference'
+          readOnly: true
+        side:
+          allOf:
+          - $ref: '#/components/schemas/SideEnum'
+          readOnly: true
+          title: Côté
+        position_note:
+          type: string
+          readOnly: true
+          title: Note de position
+        inter_electrode_distance_mm:
+          type: integer
+          readOnly: true
+          nullable: true
+          title: Distance inter-électrodes (mm)
+        skin_prep_done:
+          type: boolean
+          readOnly: true
+          nullable: true
+          title: Préparation cutanée faite
+        photo:
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+      - channel_id
+      - device
+      - id
+      - inter_electrode_distance_mm
+      - muscle
+      - photo
+      - position_note
+      - side
+      - skin_prep_done
+    SetupChannelInputRequest:
+      type: object
+      description: |-
+        Une entrée du remplacement des canaux d'un setup.
+
+        Tous les champs détaillés (``position_note``, ``inter_electrode_distance_mm``,
+        ``skin_prep_done``, ``photo``) sont optionnels : un canal sans aucun champ
+        détaillé est un canal « simple » (muscle + côté) — le niveau de détail du
+        setup est recalculé en service après le remplacement.
+
+        ``device`` est optionnel (canal déclaré sans capteur précis — placement
+        générique) ; ``muscle`` référence TOUJOURS ``exercises.Muscle`` (jamais
+        ``MuscleGroup``, décision feature 05).
+
+        ``photo`` est limitée en type et en taille (JPEG/PNG/WebP, 5 Mo max —
+        ``check_photo_limits``), validée sur l'upload AVANT écriture dans
+        ``default_storage``.
+      properties:
+        device:
+          type: string
+          format: uuid
+          nullable: true
+        channel_id:
+          type: integer
+          minimum: 1
+        muscle:
+          type: string
+          format: uuid
+        side:
+          allOf:
+          - $ref: '#/components/schemas/SideEnum'
+          default: na
+        position_note:
+          type: string
+          default: ''
+        inter_electrode_distance_mm:
+          type: integer
+          minimum: 1
+          nullable: true
+        skin_prep_done:
+          type: boolean
+          nullable: true
+        photo:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - channel_id
+      - muscle
+    SetupChannelReference:
+      type: object
+      description: Référence compacte d'un canal dans une calibration (muscle + côté).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        channel_id:
+          type: integer
+          readOnly: true
+          title: Canal du capteur
+        side:
+          allOf:
+          - $ref: '#/components/schemas/SideEnum'
+          readOnly: true
+          title: Côté
+        muscle:
+          allOf:
+          - $ref: '#/components/schemas/MuscleReference'
+          readOnly: true
+      required:
+      - channel_id
+      - id
+      - muscle
+      - side
+    SetupComparison:
+      type: object
+      description: |-
+        Comparabilité de deux setups (réponse de ``GET /setups/compare/``).
+
+        ``level`` est l'un de ``identical`` / ``equivalent`` / ``approximate`` /
+        ``different`` / ``unknown`` ; ``reasons`` sont des chaînes stables et
+        lisibles, réutilisables telles quelles par l'IA (cf.
+        ``services.compare_setups``).
+      properties:
+        level:
+          $ref: '#/components/schemas/LevelEnum'
+        reasons:
+          type: array
+          items:
+            type: string
+      required:
+      - level
+      - reasons
+    SetupReference:
+      type: object
+      description: Référence compacte d'une version de setup (``id``, ``name``, ``version``).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+        version:
+          type: integer
+          readOnly: true
+      required:
+      - id
+      - name
+      - version
+    SetupsAthleteReference:
+      type: object
+      description: |-
+        Référence compacte d'un profil sportif (``id`` + ``sport``).
+
+        ``ref_name`` distinct de celui de l'app ``workouts`` (même projection) :
+        drf-spectacular exige un nom de composant unique par schéma.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sport:
+          type: string
+          readOnly: true
+          title: Sport principal
+      required:
+      - id
+      - sport
     SexEnum:
       enum:
       - female
@@ -5204,6 +6693,16 @@ components:
         * `female` - Femme
         * `male` - Homme
         * `non_binary` - Non binaire
+    SideEnum:
+      enum:
+      - left
+      - right
+      - na
+      type: string
+      description: |-
+        * `left` - Gauche
+        * `right` - Droite
+        * `na` - Non applicable
     Team:
       type: object
       description: Équipe (vue par ses membres).
@@ -5320,6 +6819,14 @@ components:
       required:
       - access
       - refresh
+    TypeEnum:
+      enum:
+      - mvc
+      - rest_baseline
+      type: string
+      description: |-
+        * `mvc` - Contraction maximale volontaire
+        * `rest_baseline` - Baseline au repos
     User:
       type: object
       description: Profil utilisateur (GET/PATCH ``/users/me/``).
