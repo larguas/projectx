@@ -4,6 +4,609 @@ info:
   version: 1.0.0
   description: API de la plateforme de suivi musculaire et de performance sportive.
 paths:
+  /api/v1/access-grants/:
+    get:
+      operationId: access_grants_list
+      description: |-
+        Grants que j'ai accordés + (en tant que coach) grants qui me sont adressés.
+
+        La création est réservée au propriétaire du profil sportif concerné et
+        exige un email vérifié (``IsEmailVerified``, feature 02).
+      parameters:
+      - in: query
+        name: grantee_type
+        schema:
+          type: string
+          title: Type de bénéficiaire
+          enum:
+          - coach
+          - team
+        description: |-
+          * `coach` - Coach
+          * `team` - Équipe
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          title: Statut
+          enum:
+          - active
+          - expired
+          - pending
+          - revoked
+        description: |-
+          * `pending` - En attente d'acceptation
+          * `active` - Actif
+          * `revoked` - Révoqué
+          * `expired` - Expiré
+      tags:
+      - access-grants
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAccessGrantList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: access_grants_create
+      description: |-
+        Grants que j'ai accordés + (en tant que coach) grants qui me sont adressés.
+
+        La création est réservée au propriétaire du profil sportif concerné et
+        exige un email vérifié (``IsEmailVerified``, feature 02).
+      tags:
+      - access-grants
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessGrant'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/access-grants/{id}/accept/:
+    post:
+      operationId: access_grants_accept_create
+      description: Le coach bénéficiaire accepte un grant ``pending`` (email vérifié
+        requis).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - access-grants
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessGrant'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/access-grants/{id}/revoke/:
+    post:
+      operationId: access_grants_revoke_create
+      description: Le propriétaire du profil révoque un grant (effet immédiat).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - access-grants
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessGrant'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/athletes/:
+    get:
+      operationId: athletes_list
+      description: Liste des sportifs visibles + création du propre profil.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: sex
+        schema:
+          type: string
+          title: Sexe
+          enum:
+          - female
+          - male
+          - non_binary
+        description: |-
+          * `female` - Femme
+          * `male` - Homme
+          * `non_binary` - Non binaire
+      - in: query
+        name: sport
+        schema:
+          type: string
+      tags:
+      - athletes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAthleteProfileList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: athletes_create
+      description: Liste des sportifs visibles + création du propre profil.
+      tags:
+      - athletes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AthleteProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AthleteProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AthleteProfileRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AthleteProfile'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/athletes/{id}/:
+    get:
+      operationId: athletes_retrieve
+      description: Détail d'un profil sportif visible + mise à jour par le propriétaire.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - athletes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AthleteProfile'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: athletes_update
+      description: Détail d'un profil sportif visible + mise à jour par le propriétaire.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - athletes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AthleteProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AthleteProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AthleteProfileRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AthleteProfile'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: athletes_partial_update
+      description: Détail d'un profil sportif visible + mise à jour par le propriétaire.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - athletes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAthleteProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAthleteProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAthleteProfileRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AthleteProfile'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/auth/clients/:
     get:
       operationId: auth_clients_list
@@ -894,6 +1497,329 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/coaches/:
+    get:
+      operationId: coaches_list
+      description: Annuaire des coachs + création du propre profil coach.
+      parameters:
+      - in: query
+        name: organization_name
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - coaches
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCoachProfileList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: coaches_create
+      description: Annuaire des coachs + création du propre profil coach.
+      tags:
+      - coaches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoachProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CoachProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CoachProfileRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachProfile'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/coaches/{id}/:
+    get:
+      operationId: coaches_retrieve
+      description: Détail d'un profil coach + mise à jour par le propriétaire.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - coaches
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachProfile'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: coaches_update
+      description: Détail d'un profil coach + mise à jour par le propriétaire.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - coaches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoachProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CoachProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CoachProfileRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachProfile'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: coaches_partial_update
+      description: Détail d'un profil coach + mise à jour par le propriétaire.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - coaches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCoachProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCoachProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCoachProfileRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachProfile'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/health/:
     get:
       operationId: health_check
@@ -918,6 +1844,593 @@ paths:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
           description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/:
+    get:
+      operationId: teams_list
+      description: Mes équipes (actives ou en attente) + création d'une équipe.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - teams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTeamList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: teams_create
+      description: Mes équipes (actives ou en attente) + création d'une équipe.
+      tags:
+      - teams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TeamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TeamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{id}/:
+    get:
+      operationId: teams_retrieve
+      description: Équipe (membre pour lire ; propriétaire pour PATCH/DELETE).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - teams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: teams_update
+      description: Équipe (membre pour lire ; propriétaire pour PATCH/DELETE).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - teams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TeamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TeamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: teams_partial_update
+      description: Équipe (membre pour lire ; propriétaire pour PATCH/DELETE).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - teams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTeamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTeamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTeamRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: teams_destroy
+      description: Équipe (membre pour lire ; propriétaire pour PATCH/DELETE).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - teams
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/members/:
+    get:
+      operationId: teams_members_list
+      description: Membres d'une équipe + invitation (propriétaire uniquement).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: role
+        schema:
+          type: string
+          title: Rôle
+          enum:
+          - athlete
+          - coach
+          - owner
+        description: |-
+          * `owner` - Propriétaire
+          * `coach` - Coach
+          * `athlete` - Sportif
+      - in: query
+        name: status
+        schema:
+          type: string
+          title: Statut
+          enum:
+          - active
+          - pending
+          - removed
+        description: |-
+          * `pending` - En attente
+          * `active` - Actif
+          * `removed` - Retiré
+      - in: path
+        name: team_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - teams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTeamMembershipList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: teams_members_create
+      description: Membres d'une équipe + invitation (propriétaire uniquement).
+      parameters:
+      - in: path
+        name: team_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - teams
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamMembership'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/members/{user_id}/:
+    delete:
+      operationId: teams_members_destroy
+      description: Retrait d'un membre (propriétaire de l'équipe ou le membre lui-même).
+      parameters:
+      - in: path
+        name: team_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - teams
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
         '400':
           description: Erreur de validation.
           content:
@@ -1068,6 +2581,190 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
+    AccessGrant:
+      type: object
+      description: Autorisation de partage (vue côté sportif et côté coach bénéficiaire).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        athlete_id:
+          type: string
+          format: uuid
+          title: Sportif
+          readOnly: true
+        granted_by_id:
+          type: string
+          format: uuid
+          title: Accordé par
+          readOnly: true
+        grantee_type:
+          allOf:
+          - $ref: '#/components/schemas/GranteeTypeEnum'
+          readOnly: true
+          title: Type de bénéficiaire
+        grantee_coach_id:
+          type: string
+          format: uuid
+          readOnly: true
+        grantee_team_id:
+          type: string
+          format: uuid
+          readOnly: true
+        scopes:
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AccessGrantStatusEnum'
+          readOnly: true
+          title: Statut
+        granted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Accordé le
+        revoked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Révoqué le
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Expiration
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - athlete_id
+      - created_at
+      - expires_at
+      - granted_at
+      - granted_by_id
+      - grantee_coach_id
+      - grantee_team_id
+      - grantee_type
+      - id
+      - revoked_at
+      - scopes
+      - status
+    AccessGrantStatusEnum:
+      enum:
+      - pending
+      - active
+      - revoked
+      - expired
+      type: string
+      description: |-
+        * `pending` - En attente d'acceptation
+        * `active` - Actif
+        * `revoked` - Révoqué
+        * `expired` - Expiré
+    AthleteProfile:
+      type: object
+      description: Profil sportif ; ``email`` est uniquement renseigné pour le propriétaire.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          nullable: true
+          readOnly: true
+        date_of_birth:
+          type: string
+          format: date
+          title: Date de naissance
+        sex:
+          title: Sexe
+          oneOf:
+          - $ref: '#/components/schemas/SexEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        height_cm:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: Taille (cm)
+        weight_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: Poids (kg)
+        dominant_side:
+          title: Côté dominant
+          oneOf:
+          - $ref: '#/components/schemas/DominantSideEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        sport:
+          type: string
+          title: Sport principal
+          maxLength: 100
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_of_birth
+      - email
+      - id
+      - updated_at
+    AthleteProfileRequest:
+      type: object
+      description: Profil sportif ; ``email`` est uniquement renseigné pour le propriétaire.
+      properties:
+        date_of_birth:
+          type: string
+          format: date
+          title: Date de naissance
+        sex:
+          title: Sexe
+          oneOf:
+          - $ref: '#/components/schemas/SexEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        height_cm:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: Taille (cm)
+        weight_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: Poids (kg)
+        dominant_side:
+          title: Côté dominant
+          oneOf:
+          - $ref: '#/components/schemas/DominantSideEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        sport:
+          type: string
+          title: Sport principal
+          maxLength: 100
+        notes:
+          type: string
+      required:
+      - date_of_birth
+    BlankEnum:
+      enum:
+      - ''
     CheckStatus:
       type: object
       properties:
@@ -1089,6 +2786,42 @@ components:
       description: |-
         * `pc_agent` - Module PC
         * `mobile` - Mobile
+    CoachProfile:
+      type: object
+      description: Profil coach (annuaire + détail).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        organization_name:
+          type: string
+          title: Structure / organisation
+          maxLength: 200
+        bio:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - updated_at
+    CoachProfileRequest:
+      type: object
+      description: Profil coach (annuaire + détail).
+      properties:
+        organization_name:
+          type: string
+          title: Structure / organisation
+          maxLength: 200
+        bio:
+          type: string
     DeviceApproveRequest:
       type: object
       description: Approbation / refus d'une autorisation par l'utilisateur connecté.
@@ -1226,6 +2959,14 @@ components:
           minLength: 1
       required:
       - device_code
+    DominantSideEnum:
+      enum:
+      - left
+      - right
+      type: string
+      description: |-
+        * `left` - Gauche
+        * `right` - Droite
     EmailResendRequest:
       type: object
       description: Renvoi de l'email de vérification (throttlé).
@@ -1266,6 +3007,14 @@ components:
           $ref: '#/components/schemas/ErrorPayload'
       required:
       - error
+    GranteeTypeEnum:
+      enum:
+      - coach
+      - team
+      type: string
+      description: |-
+        * `coach` - Coach
+        * `team` - Équipe
     HealthCheckState:
       enum:
       - ok
@@ -1326,6 +3075,75 @@ components:
           type: string
       required:
       - message
+    PaginatedAccessGrantList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessGrant'
+    PaginatedAthleteProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AthleteProfile'
+    PaginatedCoachProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoachProfile'
     PaginatedDeviceAuthorizationList:
       type: object
       required:
@@ -1349,6 +3167,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DeviceAuthorization'
+    PaginatedTeamList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Team'
+    PaginatedTeamMembershipList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamMembership'
     PasswordChangeRequest:
       type: object
       description: Changement de mot de passe (utilisateur authentifié).
@@ -1393,6 +3257,61 @@ components:
       - new_password
       - token
       - uid
+    PatchedAthleteProfileRequest:
+      type: object
+      description: Profil sportif ; ``email`` est uniquement renseigné pour le propriétaire.
+      properties:
+        date_of_birth:
+          type: string
+          format: date
+          title: Date de naissance
+        sex:
+          title: Sexe
+          oneOf:
+          - $ref: '#/components/schemas/SexEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        height_cm:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: Taille (cm)
+        weight_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          title: Poids (kg)
+        dominant_side:
+          title: Côté dominant
+          oneOf:
+          - $ref: '#/components/schemas/DominantSideEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        sport:
+          type: string
+          title: Sport principal
+          maxLength: 100
+        notes:
+          type: string
+    PatchedCoachProfileRequest:
+      type: object
+      description: Profil coach (annuaire + détail).
+      properties:
+        organization_name:
+          type: string
+          title: Structure / organisation
+          maxLength: 200
+        bio:
+          type: string
+    PatchedTeamRequest:
+      type: object
+      description: Équipe (vue par ses membres).
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nom
+          maxLength: 200
     PatchedUserRequest:
       type: object
       description: Profil utilisateur (GET/PATCH ``/users/me/``).
@@ -1449,6 +3368,121 @@ components:
       required:
       - email
       - password
+    RoleEnum:
+      enum:
+      - owner
+      - coach
+      - athlete
+      type: string
+      description: |-
+        * `owner` - Propriétaire
+        * `coach` - Coach
+        * `athlete` - Sportif
+    SexEnum:
+      enum:
+      - female
+      - male
+      - non_binary
+      type: string
+      description: |-
+        * `female` - Femme
+        * `male` - Homme
+        * `non_binary` - Non binaire
+    Team:
+      type: object
+      description: Équipe (vue par ses membres).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          title: Nom
+          maxLength: 200
+        owner_id:
+          type: string
+          format: uuid
+          title: Propriétaire
+          readOnly: true
+        owner_email:
+          type: string
+          format: email
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - owner_email
+      - owner_id
+      - updated_at
+    TeamMembership:
+      type: object
+      description: Membre d'une équipe (l'email est visible par les co-équipiers).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user_id:
+          type: string
+          format: uuid
+          title: Membre
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+          title: Rôle
+        status:
+          allOf:
+          - $ref: '#/components/schemas/TeamMembershipStatusEnum'
+          readOnly: true
+          title: Statut
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+      - role
+      - status
+      - user_id
+    TeamMembershipStatusEnum:
+      enum:
+      - pending
+      - active
+      - removed
+      type: string
+      description: |-
+        * `pending` - En attente
+        * `active` - Actif
+        * `removed` - Retiré
+    TeamRequest:
+      type: object
+      description: Équipe (vue par ses membres).
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nom
+          maxLength: 200
+      required:
+      - name
     TokenPair:
       type: object
       description: Paire JWT (access + refresh).
