@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "apps.teams",
     "apps.devices",
     "apps.exercises",
+    "apps.setups",
     "apps.workouts",
     "apps.audit",
 ]
