@@ -30,8 +30,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from django.utils import timezone
+
 if TYPE_CHECKING:
-    from apps.setups.models import SensorSetup
+    from apps.setups.models import Calibration, SensorSetup
 
 
 class SetupsServiceError(Exception):
@@ -255,3 +257,51 @@ def _recompute_detail_level(setup: SensorSetup, channels: list) -> None:
     if setup.detail_level != level:
         setup.detail_level = level
         setup.save()
+
+
+def applicable_calibrations(setup: SensorSetup):
+    """Calibrations APPLICABLES au ``setup`` (version précise) donné.
+
+    Implémente la règle d'applicabilité du doc 05b : une calibration est
+    applicable si — et seulement si — elle est non invalidée, non expirée ET
+    rattachée au setup de la séance. La troisième condition est portée par le
+    filtre sur ``setup`` : une calibration d'une autre version (ou d'un autre
+    nom de setup) ne s'applique jamais ici — une MVC n'a de sens que pour un
+    placement donné, et ``new_version`` sans ``placement_unchanged`` ne la
+    déplace pas.
+
+    Retourne un ``QuerySet[Calibration]`` (filtrable ensuite par type/canal en
+    vue) ; vide si aucune calibration n'est applicable.
+    """
+    from django.db.models import Q
+
+    from apps.setups.models import Calibration
+
+    return (
+        Calibration.objects.filter(setup=setup, invalidated_at__isnull=True)
+        .filter(Q(valid_until__isnull=True) | Q(valid_until__gt=timezone.now()))
+        .select_related("setup_channel")
+    )
+
+
+def invalidate_calibration(user, calibration: Calibration, reason: str) -> Calibration:
+    """Invalide une calibration avec un motif (``POST /calibrations/{id}/invalidate/``).
+
+    L'invalidation est IRRÉVERSIBLE côté API (pas de réactivation : on crée une
+    nouvelle calibration) et se marque par ``invalidated_at`` +
+    ``invalidation_reason`` — la calibration n'est plus jamais renvoyée par
+    ``applicable_calibrations``. Le traçage (événement ``calibration.invalidated``)
+    est fait par la vue, comme pour les autres événements d'audit de l'app.
+
+    Refusé si la calibration est déjà invalidée (``already_invalidated``, 409).
+    """
+    _assert_write_access(user, calibration.athlete)
+    if calibration.invalidated_at is not None:
+        raise SetupsServiceError(
+            "already_invalidated",
+            "Cette calibration est déjà invalidée.",
+        )
+    calibration.invalidated_at = timezone.now()
+    calibration.invalidation_reason = reason
+    calibration.save(update_fields=("invalidated_at", "invalidation_reason", "updated_at"))
+    return calibration
