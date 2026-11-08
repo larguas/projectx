@@ -319,6 +319,7 @@ class AthleteCurrentSetupsView(generics.ListAPIView):
 
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = serializers.SensorSetupSerializer
+    queryset = SensorSetup.objects.none()  # pour drf-spectacular (inférence modèle)
 
     def get_queryset(self):
         return (
@@ -359,6 +360,7 @@ class AthleteCalibrationsView(generics.ListAPIView):
 
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = serializers.CalibrationSerializer
+    queryset = Calibration.objects.none()  # pour drf-spectacular (inférence modèle)
 
     def get_queryset(self):
         queryset = (

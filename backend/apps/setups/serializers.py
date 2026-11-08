@@ -26,12 +26,17 @@ from apps.setups.models import Calibration, PlacementGuide, SensorSetup, SetupCh
 
 
 class AthleteReferenceSerializer(serializers.ModelSerializer):
-    """Référence compacte d'un profil sportif (``id`` + ``sport``)."""
+    """Référence compacte d'un profil sportif (``id`` + ``sport``).
+
+    ``ref_name`` distinct de celui de l'app ``workouts`` (même projection) :
+    drf-spectacular exige un nom de composant unique par schéma.
+    """
 
     class Meta:
         model = AthleteProfile
         fields = ("id", "sport")
         read_only_fields = fields
+        ref_name = "SetupsAthleteReference"
 
 
 class MuscleReferenceSerializer(serializers.ModelSerializer):
