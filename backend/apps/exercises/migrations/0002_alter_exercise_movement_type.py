@@ -4,15 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('exercises', '0001_initial'),
+        ("exercises", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='exercise',
-            name='movement_type',
-            field=models.CharField(choices=[('compound', 'Polyarticulaire'), ('isolation', 'Monoarticulaire'), ('isometric', 'Isométrique')], default='compound', max_length=16, verbose_name='type de mouvement'),
+            model_name="exercise",
+            name="movement_type",
+            field=models.CharField(
+                choices=[
+                    ("compound", "Polyarticulaire"),
+                    ("isolation", "Monoarticulaire"),
+                    ("isometric", "Isométrique"),
+                ],
+                default="compound",
+                max_length=16,
+                verbose_name="type de mouvement",
+            ),
         ),
     ]

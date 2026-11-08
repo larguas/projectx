@@ -85,17 +85,11 @@ class TestExerciseDetailRead:
         staff = UserFactory(is_staff=True)
         global_exercise = ExerciseFactory(is_global=True)
         personal_exercise = ExerciseFactory(created_by=user)
-        body = client.get(
-            f"/api/v1/exercises/{global_exercise.pk}/", **auth_headers(user)
-        ).json()
+        body = client.get(f"/api/v1/exercises/{global_exercise.pk}/", **auth_headers(user)).json()
         assert body["editable"] is False
-        body = client.get(
-            f"/api/v1/exercises/{global_exercise.pk}/", **auth_headers(staff)
-        ).json()
+        body = client.get(f"/api/v1/exercises/{global_exercise.pk}/", **auth_headers(staff)).json()
         assert body["editable"] is True
-        body = client.get(
-            f"/api/v1/exercises/{personal_exercise.pk}/", **auth_headers(user)
-        ).json()
+        body = client.get(f"/api/v1/exercises/{personal_exercise.pk}/", **auth_headers(user)).json()
         assert body["editable"] is True
 
 
@@ -196,9 +190,7 @@ class TestExerciseDelete:
     def test_creator_deletes_personal_physically(self, client):
         user = UserFactory()
         exercise = ExerciseFactory(created_by=user)
-        response = client.delete(
-            f"/api/v1/exercises/{exercise.pk}/", **auth_headers(user)
-        )
+        response = client.delete(f"/api/v1/exercises/{exercise.pk}/", **auth_headers(user))
         assert response.status_code == 204
         assert not Exercise.objects.filter(pk=exercise.pk).exists()
 
@@ -236,9 +228,7 @@ class TestExerciseDelete:
     def test_superuser_deletes_global_archives_logically(self, client):
         superuser = UserFactory(is_superuser=True)
         exercise = ExerciseFactory(is_global=True)
-        response = client.delete(
-            f"/api/v1/exercises/{exercise.pk}/", **auth_headers(superuser)
-        )
+        response = client.delete(f"/api/v1/exercises/{exercise.pk}/", **auth_headers(superuser))
         assert response.status_code == 204
         assert Exercise.objects.get(pk=exercise.pk).is_archived is True
 

@@ -45,7 +45,10 @@ def _entry(exercise: Exercise, sets=3, reps=10, parameters=None) -> dict:
 def _put(client, user, workout_id, entries):
     url = f"/api/v1/workouts/{workout_id}/exercises/"
     return client.put(
-        url, data=json.dumps({"exercises": entries}), content_type="application/json", **auth_headers(user)
+        url,
+        data=json.dumps({"exercises": entries}),
+        content_type="application/json",
+        **auth_headers(user),
     )
 
 
@@ -169,7 +172,10 @@ class TestReplaceSuccess:
         owner = UserFactory()
         workout = WorkoutFactory(owner=owner)
         response = _put(
-            client, owner, workout.pk, [_entry(_seeded("Bicep Curl"), parameters={"tempo": "3-1-2"})]
+            client,
+            owner,
+            workout.pk,
+            [_entry(_seeded("Bicep Curl"), parameters={"tempo": "3-1-2"})],
         )
         assert response.status_code == 200
         assert workout.exercises.get().parameters == {"tempo": "3-1-2"}
@@ -190,14 +196,20 @@ class TestReplaceValidation:
         payload = {"exercise": str(_seeded("Bicep Curl").pk)}  # cibles manquantes
         url = f"/api/v1/workouts/{workout.pk}/exercises/"
         response = client.put(
-            url, data=json.dumps({"exercises": [payload]}), content_type="application/json", **auth_headers(owner)
+            url,
+            data=json.dumps({"exercises": [payload]}),
+            content_type="application/json",
+            **auth_headers(owner),
         )
         assert response.status_code == 400
 
     def test_zero_target_reps_rejected(self, client):
         owner = UserFactory()
         workout = WorkoutFactory(owner=owner)
-        assert _put(client, owner, workout.pk, [_entry(_seeded("Bicep Curl"), reps=0)]).status_code == 400
+        assert (
+            _put(client, owner, workout.pk, [_entry(_seeded("Bicep Curl"), reps=0)]).status_code
+            == 400
+        )
 
     def test_unknown_exercise_id_rejected(self, client):
         owner = UserFactory()
@@ -205,7 +217,10 @@ class TestReplaceValidation:
         payload = {"exercise": str(uuid.uuid4()), "target_sets": 3, "target_reps": 10}
         url = f"/api/v1/workouts/{workout.pk}/exercises/"
         response = client.put(
-            url, data=json.dumps({"exercises": [payload]}), content_type="application/json", **auth_headers(owner)
+            url,
+            data=json.dumps({"exercises": [payload]}),
+            content_type="application/json",
+            **auth_headers(owner),
         )
         assert response.status_code == 400
 
@@ -229,8 +244,12 @@ class TestReplaceVisibility:
         workout = WorkoutFactory(owner=owner)
         e1 = _seeded("Bicep Curl")
         e2 = _seeded("Push-Up")
-        line1 = WorkoutExerciseFactory(workout=workout, exercise=e1, order=1, target_sets=3, target_reps=10)
-        line2 = WorkoutExerciseFactory(workout=workout, exercise=e2, order=2, target_sets=4, target_reps=8)
+        line1 = WorkoutExerciseFactory(
+            workout=workout, exercise=e1, order=1, target_sets=3, target_reps=10
+        )
+        line2 = WorkoutExerciseFactory(
+            workout=workout, exercise=e2, order=2, target_sets=4, target_reps=8
+        )
         invisible = ExerciseFactory(created_by=UserFactory())
         response = _put(client, owner, workout.pk, [_entry(invisible), _entry(e1)])
         assert response.status_code == 403

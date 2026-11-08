@@ -27,9 +27,7 @@ from django.db.models import Q, QuerySet
 
 def is_staff(user) -> bool:
     """Le « staff » plateforme : ``is_staff`` OU superutilisateur Django."""
-    return bool(
-        getattr(user, "is_authenticated", False) and (user.is_staff or user.is_superuser)
-    )
+    return bool(getattr(user, "is_authenticated", False) and (user.is_staff or user.is_superuser))
 
 
 def visible_exercises(user) -> QuerySet:

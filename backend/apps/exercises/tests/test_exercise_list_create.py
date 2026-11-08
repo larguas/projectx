@@ -84,9 +84,7 @@ class TestExerciseList:
         user = UserFactory()
         isometric = ExerciseFactory(created_by=user, movement_type=Exercise.MovementType.ISOMETRIC)
         compound = ExerciseFactory(created_by=user, movement_type=Exercise.MovementType.COMPOUND)
-        response = client.get(
-            "/api/v1/exercises/?movement_type=isometric", **auth_headers(user)
-        )
+        response = client.get("/api/v1/exercises/?movement_type=isometric", **auth_headers(user))
         ids = {e["id"] for e in response.json()["results"]}
         expected = set(
             Exercise.objects.filter(movement_type=Exercise.MovementType.ISOMETRIC).values_list(

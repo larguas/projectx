@@ -38,9 +38,9 @@ def visible_workouts(user) -> QuerySet:
         return qs.none()
     if user.is_superuser:
         return qs
-    granted_athlete_ids = access.visible_athletes(
-        user, scopes.SESSIONS_READ.name
-    ).values_list("pk", flat=True)
+    granted_athlete_ids = access.visible_athletes(user, scopes.SESSIONS_READ.name).values_list(
+        "pk", flat=True
+    )
     return qs.filter(Q(owner=user) | Q(athlete_id__in=granted_athlete_ids)).distinct()
 
 

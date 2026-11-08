@@ -155,7 +155,9 @@ class TestWorkoutCreate:
 
     def test_user_creates_personal_plan_without_athlete(self, client):
         user = UserFactory()
-        response = post_json(client, "/api/v1/workouts/", {"name": "Mon plan"}, **auth_headers(user))
+        response = post_json(
+            client, "/api/v1/workouts/", {"name": "Mon plan"}, **auth_headers(user)
+        )
         assert response.status_code == 201, response.data
         body = response.json()
         assert "owner" not in body  # identité du propriétaire jamais exposée

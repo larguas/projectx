@@ -152,7 +152,10 @@ class TestWorkoutPatch:
         athlete_profile = AthleteProfileFactory()
         workout = WorkoutFactory(owner=athlete_profile.user, athlete=athlete_profile)
         AccessGrantFactory(athlete=athlete_profile, grantee_coach=coach, scopes=[SCOPE_WRITE])
-        assert client.get(f"/api/v1/workouts/{workout.pk}/", **auth_headers(coach_user)).status_code == 404
+        assert (
+            client.get(f"/api/v1/workouts/{workout.pk}/", **auth_headers(coach_user)).status_code
+            == 404
+        )
         response = _patch(client, coach_user, workout.pk, {"notes": "Sans lecture ?"})
         assert response.status_code == 404
 
@@ -180,9 +183,7 @@ class TestWorkoutPatch:
         athlete_a = AthleteProfileFactory()
         athlete_b = AthleteProfileFactory()
         workout = WorkoutFactory(owner=athlete_a.user, athlete=athlete_a)
-        AccessGrantFactory(
-            athlete=athlete_a, grantee_coach=coach, scopes=[SCOPE_READ, SCOPE_WRITE]
-        )
+        AccessGrantFactory(athlete=athlete_a, grantee_coach=coach, scopes=[SCOPE_READ, SCOPE_WRITE])
         response = _patch(client, coach_user, workout.pk, {"athlete": str(athlete_b.pk)})
         assert response.status_code == 403
         workout.refresh_from_db()
