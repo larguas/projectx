@@ -18,6 +18,10 @@ urlpatterns = [
     # Feature 04 : capteurs.
     path("api/v1/devices/", include("apps.devices.urls")),
     path("api/v1/device-models/", include("apps.devices.model_urls")),
+    # Feature 05 : exercices et entraînements.
+    path("api/v1/exercises/", include("apps.exercises.urls")),
+    path("api/v1/muscle-groups/", include("apps.exercises.group_urls")),
+    path("api/v1/muscles/", include("apps.exercises.muscle_urls")),
     # Contrat OpenAPI versionné dans le repo (décision n°14) : `make schema`.
     path(
         "api/schema/",
