@@ -1,0 +1,128 @@
+openapi: 3.0.3
+info:
+  title: API Plateforme EMG
+  version: 1.0.0
+  description: API de la plateforme de suivi musculaire et de performance sportive.
+paths:
+  /api/v1/health/:
+    get:
+      operationId: health_check
+      description: |-
+        État de l'application, de la base de données et de Redis.
+
+        200 si tous les checks sont OK, sinon 503 avec ``status: degraded``.
+      tags:
+      - health
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    CheckStatus:
+      type: object
+      properties:
+        app:
+          $ref: '#/components/schemas/HealthCheckState'
+        database:
+          $ref: '#/components/schemas/HealthCheckState'
+        redis:
+          $ref: '#/components/schemas/HealthCheckState'
+      required:
+      - app
+      - database
+      - redis
+    ErrorPayload:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Code d'erreur stable, machine-readable.
+        message:
+          type: string
+        details:
+          nullable: true
+          description: Détails (ex. erreurs par champ) ; null sinon.
+      required:
+      - code
+      - message
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorPayload'
+      required:
+      - error
+    HealthCheckState:
+      enum:
+      - ok
+      - error
+      type: string
+      description: |-
+        * `ok` - ok
+        * `error` - error
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        checks:
+          $ref: '#/components/schemas/CheckStatus'
+      required:
+      - checks
+      - status
+    StatusEnum:
+      enum:
+      - ok
+      - degraded
+      type: string
+      description: |-
+        * `ok` - ok
+        * `degraded` - degraded
