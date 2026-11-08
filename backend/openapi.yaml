@@ -4,6 +4,896 @@ info:
   version: 1.0.0
   description: API de la plateforme de suivi musculaire et de performance sportive.
 paths:
+  /api/v1/auth/clients/:
+    get:
+      operationId: auth_clients_list
+      description: Clients autorisés (module PC / mobile) de l'utilisateur connecté.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceAuthorizationList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/clients/{authorization_id}/:
+    delete:
+      operationId: auth_clients_revoke
+      description: 'Révocation d''un client (statut → ``denied``) : plus de refresh
+        possible.'
+      parameters:
+      - in: path
+        name: authorization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/device/approve/:
+    post:
+      operationId: auth_device_approve
+      description: Approbation / refus d'une autorisation (utilisateur connecté, throttlé).
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceApproveRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceApproveRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceApproveRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceApproveResponse'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/device/code/:
+    post:
+      operationId: auth_device_code
+      description: |-
+        Émission d'un code d'autorisation (publique, throttlé).
+
+        Le ``device_code`` est renvoyé une seule fois : il n'est stocké que haché.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCodeRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceCodeRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceCodeRequestRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCodeResponse'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/device/token/:
+    post:
+      operationId: auth_device_token
+      description: |-
+        Demande de jetons du client (polling avec le ``device_code``).
+
+        Codes d'erreur stables (HTTP 400) : ``authorization_pending``, ``slow_down``,
+        ``access_denied``, ``expired_token``, ``invalid_grant`` ; sinon une paire JWT.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceTokenRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceTokenRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceTokenRequestRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/email/resend/:
+    post:
+      operationId: auth_email_resend
+      description: |-
+        Renvoi de l'email de vérification (publique, throttlé).
+
+        La réponse est identique que le compte existe ou non.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailResendRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmailResendRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmailResendRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/email/verify/:
+    post:
+      operationId: auth_email_verify
+      description: Vérification de l'adresse email avec le jeton signé (usage unique).
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmailVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmailVerifyRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login
+      description: 'Connexion par email + mot de passe (throttlé) : paire access +
+        refresh.'
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/logout/:
+    post:
+      operationId: auth_logout
+      description: 'Déconnexion (authentifié) : blacklist du refresh token transmis.'
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/password/change/:
+    post:
+      operationId: auth_password_change
+      description: 'Changement de mot de passe (authentifié) : vérifie l''ancien mot
+        de passe.'
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/password/forgot/:
+    post:
+      operationId: auth_password_forgot
+      description: |-
+        Demande de réinitialisation (publique, throttlé).
+
+        La réponse est identique que le compte existe ou non.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordForgotRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordForgotRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordForgotRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/password/reset/:
+    post:
+      operationId: auth_password_reset
+      description: Réinitialisation avec le jeton signé reçu par email (usage unique).
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/refresh/:
+    post:
+      operationId: auth_refresh
+      description: |-
+        Renouvellement avec rotation (l'ancien refresh est blacklisté).
+
+        Un client device code révoqué se voit refuser le renouvellement (401).
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/register/:
+    post:
+      operationId: auth_register
+      description: 'Inscription (publique) : crée le compte et envoie l''email de
+        vérification.'
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/health/:
     get:
       operationId: health_check
@@ -64,6 +954,118 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/users/me/:
+    get:
+      operationId: users_me
+      description: Profil de l'utilisateur authentifié (GET / PATCH).
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: users_me_update
+      description: Profil de l'utilisateur authentifié (GET / PATCH).
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     CheckStatus:
@@ -79,6 +1081,170 @@ components:
       - app
       - database
       - redis
+    ClientTypeEnum:
+      enum:
+      - pc_agent
+      - mobile
+      type: string
+      description: |-
+        * `pc_agent` - Module PC
+        * `mobile` - Mobile
+    DeviceApproveRequest:
+      type: object
+      description: Approbation / refus d'une autorisation par l'utilisateur connecté.
+      properties:
+        user_code:
+          type: string
+          minLength: 1
+          maxLength: 16
+        approve:
+          type: boolean
+      required:
+      - approve
+      - user_code
+    DeviceApproveResponse:
+      type: object
+      description: Nouvel état de l'autorisation après approbation / refus.
+      properties:
+        status:
+          $ref: '#/components/schemas/DeviceApproveResponseStatusEnum'
+      required:
+      - status
+    DeviceApproveResponseStatusEnum:
+      enum:
+      - approved
+      - denied
+      type: string
+      description: |-
+        * `approved` - approved
+        * `denied` - denied
+    DeviceAuthorization:
+      type: object
+      description: Client autorisé (module PC / mobile), pour la liste et la révocation.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        client_type:
+          allOf:
+          - $ref: '#/components/schemas/ClientTypeEnum'
+          readOnly: true
+          title: Type de client
+        client_name:
+          type: string
+          readOnly: true
+          title: Nom du client
+        client_version:
+          type: string
+          readOnly: true
+          title: Version du client
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DeviceAuthorizationStatusEnum'
+          readOnly: true
+          title: Statut
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Expire le
+        last_polled_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Dernier polling
+      required:
+      - client_name
+      - client_type
+      - client_version
+      - created_at
+      - expires_at
+      - id
+      - last_polled_at
+      - status
+    DeviceAuthorizationStatusEnum:
+      enum:
+      - pending
+      - approved
+      - denied
+      - expired
+      - consumed
+      type: string
+      description: |-
+        * `pending` - En attente d'approbation
+        * `approved` - Approuvé
+        * `denied` - Refusé ou révoqué
+        * `expired` - Expiré
+        * `consumed` - Échangé contre des jetons
+    DeviceCodeRequestRequest:
+      type: object
+      description: Demande d'un code d'autorisation pour un client de bureau / mobile.
+      properties:
+        client_type:
+          $ref: '#/components/schemas/ClientTypeEnum'
+        client_name:
+          type: string
+          maxLength: 200
+        client_version:
+          type: string
+          maxLength: 50
+      required:
+      - client_type
+    DeviceCodeResponse:
+      type: object
+      description: 'Codes d''autorisation : ``device_code`` n''est renvoyé qu''une
+        seule fois.'
+      properties:
+        device_code:
+          type: string
+        user_code:
+          type: string
+        verification_uri:
+          type: string
+        expires_in:
+          type: integer
+        interval:
+          type: integer
+      required:
+      - device_code
+      - expires_in
+      - interval
+      - user_code
+      - verification_uri
+    DeviceTokenRequestRequest:
+      type: object
+      description: Demande de jetons du client (polling avec le ``device_code``).
+      properties:
+        device_code:
+          type: string
+          minLength: 1
+      required:
+      - device_code
+    EmailResendRequest:
+      type: object
+      description: Renvoi de l'email de vérification (throttlé).
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    EmailVerifyRequest:
+      type: object
+      description: Vérification d'email avec le jeton signé reçu par email.
+      properties:
+        token:
+          type: string
+          minLength: 1
+      required:
+      - token
     ErrorPayload:
       type: object
       properties:
@@ -112,13 +1278,13 @@ components:
       type: object
       properties:
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/HealthResponseStatusEnum'
         checks:
           $ref: '#/components/schemas/CheckStatus'
       required:
       - checks
       - status
-    StatusEnum:
+    HealthResponseStatusEnum:
       enum:
       - ok
       - degraded
@@ -126,3 +1292,227 @@ components:
       description: |-
         * `ok` - ok
         * `degraded` - degraded
+    LoginRequest:
+      type: object
+      description: 'Connexion par email (``USERNAME_FIELD``) : renvoie la paire access
+        + refresh.'
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    LogoutRequest:
+      type: object
+      description: 'Déconnexion : blacklist du refresh token transmis.'
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    MessageResponse:
+      type: object
+      description: Réponse générique à un seul message (ne révèle jamais l'existence
+        d'un compte).
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    PaginatedDeviceAuthorizationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceAuthorization'
+    PasswordChangeRequest:
+      type: object
+      description: Changement de mot de passe (utilisateur authentifié).
+      properties:
+        old_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 10
+      required:
+      - new_password
+      - old_password
+    PasswordForgotRequest:
+      type: object
+      description: 'Demande de réinitialisation : ne révèle jamais l''existence du
+        compte.'
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    PasswordResetRequest:
+      type: object
+      description: Réinitialisation avec le jeton signé reçu par email (usage unique).
+      properties:
+        uid:
+          type: string
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 10
+      required:
+      - new_password
+      - token
+      - uid
+    PatchedUserRequest:
+      type: object
+      description: Profil utilisateur (GET/PATCH ``/users/me/``).
+      properties:
+        first_name:
+          type: string
+          title: Prénom
+          maxLength: 150
+        last_name:
+          type: string
+          title: Nom
+          maxLength: 150
+        locale:
+          type: string
+          minLength: 1
+          maxLength: 35
+        timezone:
+          type: string
+          minLength: 1
+          title: Fuseau horaire (IANA)
+          maxLength: 60
+    RefreshRequest:
+      type: object
+      description: |-
+        Renouvellement avec rotation : l'ancien refresh est blacklisté.
+
+        Si le jeton porte le claim ``device_auth_id`` (flux device code), le client
+        ne doit pas avoir été révoqué, sinon le renouvellement est refusé.
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    RegisterRequest:
+      type: object
+      description: 'Inscription : email unique (insensible à la casse) + mot de passe
+        politique.'
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 10
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - password
+    TokenPair:
+      type: object
+      description: Paire JWT (access + refresh).
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      description: Profil utilisateur (GET/PATCH ``/users/me/``).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Adresse email
+        first_name:
+          type: string
+          title: Prénom
+          maxLength: 150
+        last_name:
+          type: string
+          title: Nom
+          maxLength: 150
+        is_active:
+          type: boolean
+          readOnly: true
+          title: Actif
+          description: Les comptes inactifs ne peuvent pas se connecter ni créer de
+            compte.
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date d'inscription
+        email_verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Email vérifié le
+        locale:
+          type: string
+          maxLength: 35
+        timezone:
+          type: string
+          title: Fuseau horaire (IANA)
+          maxLength: 60
+      required:
+      - date_joined
+      - email
+      - email_verified_at
+      - id
+      - is_active
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
