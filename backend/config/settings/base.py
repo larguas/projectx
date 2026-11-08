@@ -131,6 +131,11 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+# --- Media (photos de placement, images de guides) ---------------------------------
+# Les photos passent par ``default_storage`` (FileSystemStorage ici) ; jamais
+# d'``open()`` direct sur les fichiers (doc 05b).
+MEDIA_URL = "media/"
+MEDIA_ROOT = Path(env("MEDIA_ROOT", default=str(BASE_DIR / "media")))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

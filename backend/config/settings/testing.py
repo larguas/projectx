@@ -5,6 +5,8 @@ Sentry est désactivé : aucun event ne doit partir pendant les tests.
 """
 
 import os
+import tempfile
+from pathlib import Path
 
 os.environ["DEBUG"] = "False"
 os.environ["SENTRY_DSN"] = ""
@@ -25,3 +27,6 @@ REST_FRAMEWORK = {  # noqa: F405
         scope: "1000/min" for scope in REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]
     },  # noqa: F405
 }
+
+# Les photos de test vont dans un répertoire temporaire (pas dans le dépôt).
+MEDIA_ROOT = Path(tempfile.mkdtemp(prefix="emg-test-media-"))  # noqa: F405

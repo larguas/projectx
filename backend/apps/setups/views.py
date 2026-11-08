@@ -37,6 +37,8 @@ décidés et stables (convention ``<resource>.viewed`` / ``<resource>.listed``) 
 La metadata ne contient que des compteurs, aucune donnée personnelle.
 """
 
+import re
+
 from django.db.models import Q
 from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
@@ -214,13 +216,44 @@ class SetupNewVersionView(generics.GenericAPIView):
         return Response(output.data, status=status.HTTP_201_CREATED)
 
 
+_CHANNEL_ENTRY_KEY = re.compile(r"^channels\[(\d+)\]\[([a-z_]+)\]$")
+
+
+def _nested_channels_payload(data) -> dict:
+    """Replie la forme multipart plate de ``PUT .../channels/`` en ``{"channels": [...]}``.
+
+    DRF livre les champs de formulaire À PLAT : les clés ``channels[i][champ]``
+    (dont ``photo``, un fichier) n'arrivent pas imbriquées dans
+    ``request.data``. Ce helper reconstruit la structure équivalente à la forme
+    JSON, pour que ``SetChannelsSerializer`` valide le même contrat quel que
+    soit le format d'envoi (JSON ou multipart). Sans clé indexée (payload
+    JSON), la donnée est renvoyée telle quelle ; les autres clés sont
+    préservées.
+    """
+    entries: dict = {}
+    rest: dict = {}
+    for key, value in data.items():
+        match = _CHANNEL_ENTRY_KEY.match(key)
+        if match is None:
+            rest[key] = value
+            continue
+        index = int(match.group(1))
+        entries.setdefault(index, {})[match.group(2)] = value
+    if not entries:
+        return dict(data)
+    return {**rest, "channels": [entries[i] for i in sorted(entries)]}
+
+
 class SetupChannelsView(generics.GenericAPIView):
     """Canaux d'un setup : lecture (GET) et remplacement ATOMIQUE (PUT).
 
-    Le corps de la demande est ``{"channels": [...]}`` : liste COMPLÈTE des
+    Le corps de la demande est ``{"channels": [...]}`` — liste COMPLÈTE des
     canaux (doublons ``(device, channel_id)`` refusés en validation ; tous les
-    champs détaillés optionnels — mode simple). Le niveau de détail du setup
-    est recalculé en service après le remplacement.
+    champs détaillés optionnels — mode simple). Deux formats d'envoi sont
+    acceptés : JSON, ou multipart avec des clés indexées
+    ``channels[i][champ]`` (seul le format qui permet d'uploader la photo de
+    chaque canal) ; les deux convergent vers le même sérialiseur. Le niveau de
+    détail du setup est recalculé en service après le remplacement.
     """
 
     permission_classes = [permissions.IsAuthenticated]
@@ -257,7 +290,8 @@ class SetupChannelsView(generics.GenericAPIView):
     )
     def put(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = serializers.SetChannelsSerializer(data=request.data)
+        payload = _nested_channels_payload(request.data)
+        serializer = serializers.SetChannelsSerializer(data=payload)
         serializer.is_valid(raise_exception=True)
         try:
             channels = services.set_channels(

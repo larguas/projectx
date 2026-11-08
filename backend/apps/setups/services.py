@@ -23,7 +23,13 @@ Règles :
   ``unknown``) et des raisons stables et lisibles — la brique de crédibilité
   des analyses ; l'IA les réutilisera comme caveats (feature 12). C'est une
   lecture : le contrôle d'accès (``setups:read`` sur chaque setup) est fait en
-  vue, pas ici.
+  vue, pas ici ;
+- les photos de placement passent par ``default_storage`` (jamais de
+  ``open()`` direct). Quand des canaux sont supprimés (remplacement par
+  ``set_channels``, suppression du setup), le fichier stocké n'est retiré que
+  s'il n'est plus référencé par AUCUN autre canal — ``new_version`` copie les
+  canaux en partageant les mêmes fichiers, donc un même fichier peut légitime-
+  ment servir plusieurs versions d'un setup.
 
 Les erreurs lèvent ``SetupsServiceError`` avec un code stable mappé en HTTP
 par les vues : ``forbidden`` -> 403 ; ``setup_frozen`` / ``has_newer_version``
@@ -144,7 +150,9 @@ def delete_setup(user, setup: SensorSetup) -> None:
             "has_newer_version",
             "Ce setup a des versions plus récentes ; supprimez d'abord celles-ci.",
         )
-    setup.delete()
+    channels_to_remove = list(setup.channels.all())
+    setup.delete()  # les canaux suivent en cascade
+    _delete_unreferenced_photos(channels_to_remove)
 
 
 def new_version(user, setup: SensorSetup, data: dict) -> SensorSetup:
@@ -244,6 +252,7 @@ def set_channels(user, setup: SensorSetup, entries: list) -> list:
             "pas être modifiés tant qu'elles existent.",
         )
     with transaction.atomic():
+        old_channels = list(setup.channels.all())
         setup.channels.all().delete()
         channels = [
             SetupChannel(
@@ -264,7 +273,33 @@ def set_channels(user, setup: SensorSetup, entries: list) -> list:
         for channel in channels:
             channel.save()
     _recompute_detail_level(setup, channels)
+    # Après la transaction : les nouveaux canaux existent déjà, donc un fichier
+    # réutilisé par le remplacement (même photo renvoyée) n'est pas orphelin.
+    _delete_unreferenced_photos(old_channels)
     return list(setup.channels.all())
+
+
+def _delete_unreferenced_photos(channels_to_remove: list) -> None:
+    """Supprime du stockage les fichiers photo devenus orphelins.
+
+    ``channels_to_remove`` : canaux dont la ligne vient d'être supprimée (leur
+    instance porte encore le nom de fichier stocké). Un fichier n'est retiré
+    que si AUCUN canal restant ne le référence — ``new_version`` copie les
+    canaux en partageant les mêmes fichiers, donc un même fichier peut servir
+    plusieurs versions d'un setup. ``default_storage.delete()`` uniquement :
+    jamais de ``open()`` direct (doc 05b). Un fichier déjà absent est ignoré.
+    """
+    from django.core.files.storage import default_storage
+
+    from apps.setups.models import SetupChannel
+
+    for channel in channels_to_remove:
+        name = channel.photo.name if channel.photo else ""
+        if not name:
+            continue
+        if SetupChannel.objects.exclude(pk=channel.pk).filter(photo=name).exists():
+            continue
+        default_storage.delete(name)
 
 
 def _recompute_detail_level(setup: SensorSetup, channels: list) -> None:

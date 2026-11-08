@@ -24,6 +24,30 @@ from apps.devices.models import Device, DeviceModel
 from apps.exercises.models import Muscle
 from apps.setups.models import Calibration, PlacementGuide, SensorSetup, SetupChannel
 
+# --- Photos de placement (doc 05b : « taille/type limités ») ---------------------
+# La validation porte sur l'objet d'upload EN MÉMOIRE, avant ``save()`` : une
+# fois le fichier écrit dans ``default_storage``, Django ne conserve plus son
+# content-type (seul le nom de chemin reste). Limites volontairement simples —
+# la photo documente un placement, elle n'est pas une bibliothèque de médias.
+PHOTO_ALLOWED_CONTENT_TYPES = ("image/jpeg", "image/png", "image/webp")
+PHOTO_MAX_SIZE_BYTES = 5 * 1024 * 1024  # 5 Mo
+
+
+def check_photo_limits(photo) -> None:
+    """Refuse une photo de placement dont le type ou la taille dépasse les limites.
+
+    ``None`` passe (champ optionnel — mode simple). Lève ``ValidationError``
+    (DRF, 400) sinon.
+    """
+    if photo is None:
+        return
+    content_type = getattr(photo, "content_type", "") or ""
+    if content_type not in PHOTO_ALLOWED_CONTENT_TYPES:
+        raise serializers.ValidationError("Type de photo non supporté : attendu JPEG, PNG ou WebP.")
+    size = getattr(photo, "size", None)
+    if size is not None and size > PHOTO_MAX_SIZE_BYTES:
+        raise serializers.ValidationError("Photo trop volumineuse (5 Mo maximum).")
+
 
 class AthleteReferenceSerializer(serializers.ModelSerializer):
     """Référence compacte d'un profil sportif (``id`` + ``sport``).
@@ -211,6 +235,10 @@ class SetupChannelInputSerializer(serializers.Serializer):
     ``device`` est optionnel (canal déclaré sans capteur précis — placement
     générique) ; ``muscle`` référence TOUJOURS ``exercises.Muscle`` (jamais
     ``MuscleGroup``, décision feature 05).
+
+    ``photo`` est limitée en type et en taille (JPEG/PNG/WebP, 5 Mo max —
+    ``check_photo_limits``), validée sur l'upload AVANT écriture dans
+    ``default_storage``.
     """
 
     device = serializers.PrimaryKeyRelatedField(
@@ -225,6 +253,10 @@ class SetupChannelInputSerializer(serializers.Serializer):
     )
     skin_prep_done = serializers.BooleanField(required=False, allow_null=True, default=None)
     photo = serializers.FileField(required=False, allow_null=True, default=None)
+
+    def validate_photo(self, value):
+        check_photo_limits(value)
+        return value
 
 
 def _validate_channel_entries(value: list) -> list:
