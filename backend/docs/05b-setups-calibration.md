@@ -47,15 +47,15 @@ Calcul de la MVC à partir des signaux (feature 09), affichage des guides (front
 - `POST /api/v1/calibrations/{id}/invalidate/`
 
 ## Tâches
-- [ ] Ajouter dans `core/scopes.py` les scopes `setups:read`, `setups:write`, `sessions:write` (compléter la liste de la feature 03) et les utiliser via `core.access`.
-- [ ] App `setups`, modèles, contraintes, migrations.
-- [ ] Services : `create_setup`, `new_version`, `set_channels`, `invalidate_calibration`, `applicable_calibrations(setup)`.
-- [ ] Service `compare_setups` + tests exhaustifs (c'est la brique de crédibilité des analyses).
-- [ ] Immutabilité : un setup utilisé par une séance refuse toute modification (vérifier au niveau service ET modèle).
-- [ ] Mode `simple` : tous les champs détaillés optionnels, `detail_level` forcé à `simple` si les champs détaillés sont vides.
-- [ ] Seed : guides de placement pour quelques muscles (biceps brachii, vastus lateralis, ...), référence citée, texte court.
-- [ ] Fichiers photo via `default_storage`, taille/type limités.
-- [ ] Admin Django.
+- [x] Ajouter dans `core/scopes.py` les scopes `setups:read`, `setups:write`, `sessions:write` (compléter la liste de la feature 03) et les utiliser via `core.access`.
+- [x] App `setups`, modèles, contraintes, migrations.
+- [x] Services : `create_setup`, `new_version`, `set_channels`, `invalidate_calibration`, `applicable_calibrations(setup)`.
+- [x] Service `compare_setups` + tests exhaustifs (c'est la brique de crédibilité des analyses).
+- [x] Immutabilité : un setup utilisé par une séance refuse toute modification (vérifier au niveau service ET modèle).
+- [x] Mode `simple` : tous les champs détaillés optionnels, `detail_level` forcé à `simple` si les champs détaillés sont vides.
+- [x] Seed : guides de placement pour quelques muscles (biceps brachii, vastus lateralis, ...), référence citée, texte court.
+- [x] Fichiers photo via `default_storage`, taille/type limités.
+- [x] Admin Django.
 
 ## Tests
 - Versionnement : modification libre avant usage, nouvelle version après usage, lignée `parent`.
