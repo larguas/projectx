@@ -10,6 +10,11 @@ urlpatterns = [
     # Feature 02 : authentification et profil.
     path("api/v1/auth/", include("apps.accounts.urls")),
     path("api/v1/users/", include("apps.accounts.user_urls")),
+    # Feature 03 : sportifs, coachs, équipes et partage de données.
+    path("api/v1/athletes/", include("apps.athletes.urls")),
+    path("api/v1/coaches/", include("apps.coaches.urls")),
+    path("api/v1/teams/", include("apps.teams.urls")),
+    path("api/v1/access-grants/", include("apps.teams.grant_urls")),
     # Contrat OpenAPI versionné dans le repo (décision n°14) : `make schema`.
     path(
         "api/schema/",

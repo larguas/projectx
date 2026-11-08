@@ -38,6 +38,10 @@ INSTALLED_APPS = [
     "django_filters",
     # Locales.
     "apps.accounts",
+    "apps.athletes",
+    "apps.coaches",
+    "apps.teams",
+    "apps.audit",
 ]
 
 # Utilisateur personnalisé : email comme identifiant (feature 02).
