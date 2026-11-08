@@ -122,6 +122,74 @@ def delete_setup(user, setup: SensorSetup) -> None:
     setup.delete()
 
 
+def new_version(user, setup: SensorSetup, data: dict) -> SensorSetup:
+    """Crée la version n+1 d'un setup (``POST /setups/{id}/new-version/``).
+
+    La nouvelle version est une COPIE COMPLÈTE de ``setup`` (nom, notes, niveau
+    de détail, canaux avec photos), ``parent = setup``, ``is_current=True`` —
+    et la version source passe en ``is_current=False``. N'étant pas encore
+    utilisée, la copie reste librement modifiable (PATCH / remplacement des
+    canaux) jusqu'à sa première utilisation par une séance.
+
+    ``data["placement_unchanged"]`` (booléen, défaut ``False``) : True quand
+    l'utilisateur affirme que seul un détail NON PHYSIQUE change (nom, notes).
+    Dans ce cas les calibrations de la version précédente sont RATTACHÉES à la
+    nouvelle version (chaque calibration suit son canal copié) — une MVC reste
+    valable pour le même placement. Sinon elles restent liées à l'ancienne
+    version et ne s'appliquent pas à la nouvelle (une MVC n'a de sens que pour
+    un placement donné).
+
+    Le basculement ``is_current`` passe par une mise à jour en base ciblée —
+    jamais de ``save()`` sur la version source, potentiellement figée.
+    """
+    from django.db import transaction
+    from django.db.models import Max
+
+    from apps.setups.models import Calibration, SensorSetup, SetupChannel
+
+    _assert_write_access(user, setup.athlete)
+    placement_unchanged = bool(data.get("placement_unchanged", False))
+    with transaction.atomic():
+        next_version = (
+            SensorSetup.objects.filter(athlete=setup.athlete, name=setup.name).aggregate(
+                max_version=Max("version")
+            )["max_version"]
+            or 0
+        ) + 1
+        new_setup = SensorSetup.objects.create(
+            athlete=setup.athlete,
+            name=setup.name,
+            version=next_version,
+            parent=setup,
+            detail_level=setup.detail_level,
+            is_current=True,
+            created_by=user,
+            notes=setup.notes,
+        )
+        channel_map: dict = {}
+        for old_channel in setup.channels.all():
+            new_channel = SetupChannel(
+                setup=new_setup,
+                device_id=old_channel.device_id,
+                channel_id=old_channel.channel_id,
+                muscle_id=old_channel.muscle_id,
+                side=old_channel.side,
+                position_note=old_channel.position_note,
+                inter_electrode_distance_mm=old_channel.inter_electrode_distance_mm,
+                skin_prep_done=old_channel.skin_prep_done,
+                photo=old_channel.photo,  # partage le même fichier stocké
+            )
+            new_channel.save()
+            channel_map[old_channel.pk] = new_channel
+        SensorSetup.objects.filter(pk=setup.pk).update(is_current=False)
+        if placement_unchanged:
+            for calibration in Calibration.objects.filter(setup=setup):
+                calibration.setup = new_setup
+                calibration.setup_channel = channel_map[calibration.setup_channel_id]
+                calibration.save(update_fields=("setup", "setup_channel", "updated_at"))
+    return new_setup
+
+
 def set_channels(user, setup: SensorSetup, entries: list) -> list:
     """Remplace ATOMIQUEMENT les canaux d'un setup non utilisé.
 
