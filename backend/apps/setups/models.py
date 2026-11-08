@@ -75,6 +75,15 @@ class SensorSetup(TimestampedModel, UUIDModel):
         blank=True,
         related_name="child_versions",
     )
+    placement_inherited_from_parent = models.BooleanField(
+        "placement hérité de la version précédente",
+        default=False,
+        help_text=(
+            "True si cette version a été créée avec ``placement_unchanged=True`` : "
+            "le placement est physiquement identique à la version parente. Base du "
+            "niveau ``identical`` du service de comparaison."
+        ),
+    )
     detail_level = models.CharField(
         "niveau de détail",
         max_length=8,
