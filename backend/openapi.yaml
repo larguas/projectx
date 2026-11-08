@@ -1820,6 +1820,394 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/device-models/:
+    get:
+      operationId: device_models_list
+      description: Catalogue des modèles de capteurs (lecture seule).
+      parameters:
+      - in: query
+        name: manufacturer
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - device-models
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceModelList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/devices/:
+    get:
+      operationId: devices_list
+      description: Liste des capteurs visibles + création d'un capteur.
+      parameters:
+      - in: query
+        name: device_model
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          title: Statut
+          enum:
+          - active
+          - retired
+        description: |-
+          * `active` - Actif
+          * `retired` - Retiré
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: devices_create
+      description: Liste des capteurs visibles + création d'un capteur.
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/devices/{id}/:
+    get:
+      operationId: devices_retrieve
+      description: Détail d'un capteur visible + mise à jour / retrait par le propriétaire.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: devices_partial_update
+      description: Détail d'un capteur visible + mise à jour / retrait par le propriétaire.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: devices_destroy
+      description: Détail d'un capteur visible + mise à jour / retrait par le propriétaire.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/health/:
     get:
       operationId: health_check
@@ -2822,6 +3210,64 @@ components:
           maxLength: 200
         bio:
           type: string
+    Device:
+      type: object
+      description: Capteur ; ``owner_email`` est uniquement renseigné pour le propriétaire.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        owner_email:
+          type: string
+          nullable: true
+          readOnly: true
+        device_model:
+          allOf:
+          - $ref: '#/components/schemas/DeviceModel'
+          readOnly: true
+        serial_number:
+          type: string
+          readOnly: true
+          title: Numéro de série
+        name:
+          type: string
+          title: Nom
+          maxLength: 200
+        firmware_version:
+          type: string
+          title: Version du firmware
+          maxLength: 50
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DeviceStatusEnum'
+          readOnly: true
+          title: Statut
+        last_seen_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Dernière connexion
+        calibration_defaults:
+          title: Défauts de calibration
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - device_model
+      - id
+      - last_seen_at
+      - owner_email
+      - serial_number
+      - status
+      - updated_at
     DeviceApproveRequest:
       type: object
       description: Approbation / refus d'une autorisation par l'utilisateur connecté.
@@ -2950,6 +3396,63 @@ components:
       - interval
       - user_code
       - verification_uri
+    DeviceModel:
+      type: object
+      description: Entrée du catalogue des modèles (lecture seule pour les utilisateurs).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        manufacturer:
+          type: string
+          readOnly: true
+          title: Fabriquant
+        name:
+          type: string
+          readOnly: true
+          title: Nom du modèle
+        protocol_version:
+          type: integer
+          readOnly: true
+          title: Version de protocole
+          description: Version du format de blocs supporté par ce modèle.
+        connection_types:
+          readOnly: true
+          title: Types de connexion
+          description: 'Sous-ensemble de : ble, usb, serial.'
+        capabilities:
+          readOnly: true
+          title: Capacités
+      required:
+      - capabilities
+      - connection_types
+      - id
+      - manufacturer
+      - name
+      - protocol_version
+    DeviceRequest:
+      type: object
+      description: Capteur ; ``owner_email`` est uniquement renseigné pour le propriétaire.
+      properties:
+        name:
+          type: string
+          title: Nom
+          maxLength: 200
+        firmware_version:
+          type: string
+          title: Version du firmware
+          maxLength: 50
+        calibration_defaults:
+          title: Défauts de calibration
+    DeviceStatusEnum:
+      enum:
+      - active
+      - retired
+      type: string
+      description: |-
+        * `active` - Actif
+        * `retired` - Retiré
     DeviceTokenRequestRequest:
       type: object
       description: Demande de jetons du client (polling avec le ``device_code``).
@@ -3167,6 +3670,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DeviceAuthorization'
+    PaginatedDeviceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+    PaginatedDeviceModelList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceModel'
     PaginatedTeamList:
       type: object
       required:
@@ -3303,6 +3852,20 @@ components:
           maxLength: 200
         bio:
           type: string
+    PatchedDeviceRequest:
+      type: object
+      description: Capteur ; ``owner_email`` est uniquement renseigné pour le propriétaire.
+      properties:
+        name:
+          type: string
+          title: Nom
+          maxLength: 200
+        firmware_version:
+          type: string
+          title: Version du firmware
+          maxLength: 50
+        calibration_defaults:
+          title: Défauts de calibration
     PatchedTeamRequest:
       type: object
       description: Équipe (vue par ses membres).
