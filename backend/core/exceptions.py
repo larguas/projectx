@@ -38,12 +38,13 @@ _STATUS_MESSAGES: dict[int, tuple[str, str]] = {
 }
 
 
-def _error_response(
+def error_response(
     status_code: int,
     code: str | None = None,
     message: str | None = None,
     details: object = None,
 ) -> Response:
+    """Construit une réponse au format d'erreur unique (utilisable par les vues)."""
     default_code, default_message = _STATUS_MESSAGES.get(status_code, ("error", "Erreur."))
     return Response(
         {
@@ -65,18 +66,20 @@ def drf_exception_handler(exc: Exception, context: dict) -> Response:
     # Conflit d'intégrité (doublon, contrainte) -> 409 plutôt que 500.
     if isinstance(exc, IntegrityError):
         logger.warning("api.conflict", path=path)
-        return _error_response(409)
+        return error_response(409)
 
     response = exception_handler(exc, context)
     if response is not None:
         code, message = _STATUS_MESSAGES.get(response.status_code, ("error", "Erreur."))
+        # Une exception peut préciser son code stable (ex. ``client_revoked``).
+        code = getattr(exc, "stable_code", None) or code
         data = response.data
         details = data if isinstance(data, (dict, list)) else None
-        return _error_response(response.status_code, code, message, details)
+        return error_response(response.status_code, code, message, details)
 
     # Exception non gérée : log structuré (avec request_id) + Sentry.
     logger.exception("api.unhandled_exception", path=path)
     import sentry_sdk
 
     sentry_sdk.capture_exception(exc)
-    return _error_response(500)
+    return error_response(500)

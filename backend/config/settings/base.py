@@ -5,6 +5,7 @@ Toute la configuration est lue depuis les variables d'environnement
 Aucun secret ne doit apparaître dans ce fichier.
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -32,9 +33,33 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "django_filters",
+    # Locales.
+    "apps.accounts",
 ]
+
+# Utilisateur personnalisé : email comme identifiant (feature 02).
+AUTH_USER_MODEL = "accounts.User"
+
+# Politique de mots de passe (documentée dans apps/accounts/services.py) :
+# minimum 10 caractères, pas de mot de passe courant, pas uniquement
+# numérique, et suffisamment différent des attributs du compte (email, noms).
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 10},
+    },
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
+
+# Durée de validité du jeton signé de réinitialisation de mot de passe
+# (1 h par défaut ; le jeton devient caduc dès que le mot de passe change).
+# En secondes (Django attend un entier, pas un timedelta).
+PASSWORD_RESET_TIMEOUT = env.int("PASSWORD_RESET_TIMEOUT_SECONDS", default=3600)
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -112,10 +137,45 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "core.pagination.DefaultPagination",
     "PAGE_SIZE": DEFAULT_PAGE_SIZE,
+    # Le throttling s'active via les ``throttle_scope`` déclarés par vue
+    # (ScopedRateThrottle laisse passer les vues sans scope).
+    "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.ScopedRateThrottle"],
     "EXCEPTION_HANDLER": "core.exceptions.drf_exception_handler",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_SCHEMA_CLASS": "core.openapi.EMGAutoSchema",
+    # Taux par scope (DRF lit ``DEFAULT_THROTTLE_RATES``) ; ajustable par
+    # environnement.
+    "DEFAULT_THROTTLE_RATES": {
+        "login": env("THROTTLE_LOGIN", default="10/min"),
+        "password_reset": env("THROTTLE_PASSWORD_RESET", default="5/min"),
+        "email_resend": env("THROTTLE_EMAIL_RESEND", default="3/min"),
+        "device_code": env("THROTTLE_DEVICE_CODE", default="5/min"),
+        "device_approve": env("THROTTLE_DEVICE_APPROVE", default="10/min"),
+    },
 }
+
+# --- JWT (feature 02 : simplejwt) -------------------------------------------------------
+# Access court (5 min par défaut) ; refresh avec rotation + blacklist du jeton précédent.
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env.int("JWT_ACCESS_MINUTES", default=5)),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=env.int("JWT_REFRESH_DAYS", default=7)),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+# --- Email ---------------------------------------------------------------------------------
+# En dev : backend console (les emails s'affichent dans le terminal).
+EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="no-reply@emg.local")
+EMAIL_HOST = env("EMAIL_HOST", default="localhost")
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+
+# URL de l'application web (liens des emails et du flux device code).
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
 
 # --- drf-spectacular (contrat OpenAPI versionné, décision n°14) ----------------------
 SPECTACULAR_SETTINGS = {
