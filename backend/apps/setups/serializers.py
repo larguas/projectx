@@ -18,6 +18,7 @@ L'accès est contrôlé en service par ``core.access`` (scopes ``setups:read`` /
 """
 
 from rest_framework import serializers
+from rest_framework.fields import empty
 
 from apps.athletes.models import AthleteProfile
 from apps.devices.models import Device, DeviceModel
@@ -363,6 +364,20 @@ class SetupComparisonSerializer(serializers.Serializer):
     reasons = serializers.ListField(child=serializers.CharField())
 
 
+class OptionalBooleanQueryField(serializers.BooleanField):
+    """Booléen de paramètre de requête à trois états (absent / ``true`` / ``false``).
+
+    DRF traite une entrée HTML (le ``QueryDict`` de ``request.query_params``)
+    comme un formulaire : un champ booléen MANQUANT y est interprété comme
+    ``False`` (comportement « case à cocher décochée » — ``default_empty_html``).
+    Pour un filtre optionnel, l'absence du paramètre doit rester ABSENTE (pas de
+    filtre), pas être confondue avec ``false`` explicit ; d'où ce surclassement
+    qui renvoie le sentinelle ``empty`` à la place de ``False``.
+    """
+
+    default_empty_html = empty
+
+
 class CompareSetupsQuerySerializer(serializers.Serializer):
     """Paramètres de requête de ``GET /setups/compare/?a={id}&b={id}``."""
 
@@ -377,9 +392,11 @@ class AthleteCalibrationsQuerySerializer(serializers.Serializer):
     - ``type`` : ``mvc`` ou ``rest_baseline`` ;
     - ``applicable`` : ``true``/``false`` — non invalidée et non expirée (la
       condition « rattachée au setup de la séance » relève du service
-      ``applicable_calibrations``, pas d'un filtre de liste).
+      ``applicable_calibrations``, pas d'un filtre de liste). Absent = pas de
+      filtre (cf. ``OptionalBooleanQueryField`` : l'absence ne devient pas
+      ``False`` comme le ferait un booléen DRF standard sur une entrée HTML).
     """
 
     setup = serializers.UUIDField(required=False)
     type = serializers.ChoiceField(choices=Calibration.Type.choices, required=False)
-    applicable = serializers.BooleanField(required=False)
+    applicable = OptionalBooleanQueryField(required=False)
