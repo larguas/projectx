@@ -19,11 +19,13 @@ aucune donnée personnelle ; l'audit de liste n'est émis que quand au moins un
 plan non propriétaire est visible (comportement identique à ``devices``).
 """
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, generics, permissions, status
 from rest_framework.response import Response
 
 from apps.audit.services import record_event
 from apps.workouts import selectors, serializers, services
+from apps.workouts.models import Workout
 from core.exceptions import error_response
 
 _ERROR_STATUS = {
@@ -80,8 +82,6 @@ class WorkoutDetailView(generics.RetrieveUpdateDestroyAPIView):
     http_method_names = ["get", "patch", "delete"]  # pas de PUT : périmètre API
 
     def get_object(self):
-        from apps.workouts.models import Workout
-
         workout = (
             Workout.objects.select_related("athlete")
             .prefetch_related("exercises__exercise")
@@ -134,11 +134,11 @@ class WorkoutExercisesReplaceView(generics.GenericAPIView):
     """
 
     permission_classes = [permissions.IsAuthenticated]
+    # Pour drf-spectacular (inférence du modèle) ; l'objet est chargé par ``get_object``.
+    queryset = Workout.objects.none()
     http_method_names = ["put"]
 
     def get_object(self):
-        from apps.workouts.models import Workout
-
         workout = (
             Workout.objects.select_related("athlete")
             .prefetch_related("exercises__exercise")
@@ -149,6 +149,11 @@ class WorkoutExercisesReplaceView(generics.GenericAPIView):
             raise exceptions.NotFound("Entraînement introuvable.")
         return workout
 
+    @extend_schema(
+        operation_id="workouts_exercises_replace",
+        request=serializers.ReplaceWorkoutExercisesSerializer,
+        responses={status.HTTP_200_OK: serializers.WorkoutExerciseSerializer(many=True)},
+    )
     def put(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = serializers.ReplaceWorkoutExercisesSerializer(data=request.data)
@@ -159,5 +164,7 @@ class WorkoutExercisesReplaceView(generics.GenericAPIView):
             )
         except services.WorkoutsServiceError as exc:
             return _service_error(exc)
-        output = serializers.WorkoutExerciseSerializer(lines, many=True, context={"request": request})
+        output = serializers.WorkoutExerciseSerializer(
+            lines, many=True, context={"request": request}
+        )
         return Response(output.data)
