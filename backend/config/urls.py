@@ -15,6 +15,9 @@ urlpatterns = [
     path("api/v1/coaches/", include("apps.coaches.urls")),
     path("api/v1/teams/", include("apps.teams.urls")),
     path("api/v1/access-grants/", include("apps.teams.grant_urls")),
+    # Feature 04 : capteurs.
+    path("api/v1/devices/", include("apps.devices.urls")),
+    path("api/v1/device-models/", include("apps.devices.model_urls")),
     # Contrat OpenAPI versionné dans le repo (décision n°14) : `make schema`.
     path(
         "api/schema/",
