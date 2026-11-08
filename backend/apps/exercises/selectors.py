@@ -55,7 +55,7 @@ def can_read_exercise(user, exercise) -> bool:
         return False
     if exercise.is_global:
         return True
-    return exercise.created_by_id == user.pk
+    return user.is_superuser or exercise.created_by_id == user.pk
 
 
 def can_write_exercise(user, exercise) -> bool:
