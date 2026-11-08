@@ -23,6 +23,11 @@ urlpatterns = [
     path("api/v1/muscle-groups/", include("apps.exercises.group_urls")),
     path("api/v1/muscles/", include("apps.exercises.muscle_urls")),
     path("api/v1/workouts/", include("apps.workouts.urls")),
+    # Feature 05b : setups de placement et calibrations (les routes imbriquées
+    # sous ``/athletes/{id}/`` et ``/muscles/{id}/`` vivent dans les url
+    # modules des apps hôtes — mêmes vues, app ``setups``).
+    path("api/v1/setups/", include("apps.setups.urls")),
+    path("api/v1/calibrations/", include("apps.setups.calibration_urls")),
     # Contrat OpenAPI versionné dans le repo (décision n°14) : `make schema`.
     path(
         "api/schema/",
