@@ -9,7 +9,8 @@ services:
       POSTGRES_USER: emg
       POSTGRES_PASSWORD: emg
     ports:
-      - "5432:5432"
+      # Binding loopback uniquement : l'infra de dev n'a pas d'exposition réseau.
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +23,7 @@ services:
     image: redis:7
     container_name: emg-redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redisdata:/data
     healthcheck:

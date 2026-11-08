@@ -1,6 +1,7 @@
 .DEFAULT_GOAL := help
 
 UV ?= uv
+DOCKER ?= docker
 COMPOSE_FILE ?= ../docker-compose.yml
 
 .PHONY: help install run migrate makemigrations worker test test-cov lint format \
@@ -70,7 +71,7 @@ loadtest: ## Test de charge de l'ingestion (implémenté en feature 07)
 	@echo "Implémenté en feature 07."
 
 up: ## Démarre Postgres + Redis (docker compose, racine du repo)
-	docker compose -f $(COMPOSE_FILE) up -d --wait
+	$(DOCKER) compose -f $(COMPOSE_FILE) up -d --wait
 
 down: ## Arrête Postgres + Redis (docker compose)
-	docker compose -f $(COMPOSE_FILE) down
+	$(DOCKER) compose -f $(COMPOSE_FILE) down
