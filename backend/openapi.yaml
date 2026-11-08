@@ -2208,6 +2208,346 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/exercises/:
+    get:
+      operationId: exercises_list
+      description: Liste des exercices visibles + création d'un exercice.
+      parameters:
+      - in: query
+        name: is_archived
+        schema:
+          type: boolean
+      - in: query
+        name: is_global
+        schema:
+          type: boolean
+      - in: query
+        name: movement_type
+        schema:
+          type: string
+          title: Type de mouvement
+          enum:
+          - compound
+          - isolation
+          - isometric
+        description: |-
+          * `compound` - Polyarticulaire
+          * `isolation` - Monoarticulaire
+          * `isometric` - Isométrique
+      - in: query
+        name: muscles__muscle_group
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - exercises
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExerciseList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: exercises_create
+      description: Liste des exercices visibles + création d'un exercice.
+      tags:
+      - exercises
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExerciseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExerciseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExerciseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/exercises/{id}/:
+    get:
+      operationId: exercises_retrieve
+      description: Détail d'un exercice visible + mise à jour / suppression selon
+        les droits.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - exercises
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: exercises_partial_update
+      description: Détail d'un exercice visible + mise à jour / suppression selon
+        les droits.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - exercises
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedExerciseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedExerciseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedExerciseRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: exercises_destroy
+      description: Détail d'un exercice visible + mise à jour / suppression selon
+        les droits.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - exercises
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/health/:
     get:
       operationId: health_check
@@ -2231,6 +2571,146 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/muscle-groups/:
+    get:
+      operationId: muscle_groups_list
+      description: Catalogue des groupes musculaires (lecture seule).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - muscle-groups
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMuscleGroupList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/muscles/:
+    get:
+      operationId: muscles_list
+      description: 'Catalogue des muscles (lecture seule) : filtre par groupe, recherche
+        texte.'
+      parameters:
+      - in: query
+        name: muscle_group
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - muscles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMuscleList'
           description: ''
         '400':
           description: Erreur de validation.
@@ -2967,6 +3447,401 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/workouts/:
+    get:
+      operationId: workouts_list
+      description: Liste des plans visibles + création d'un plan pour le connecté.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - workouts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWorkoutList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: workouts_create
+      description: Liste des plans visibles + création d'un plan pour le connecté.
+      tags:
+      - workouts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WorkoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/workouts/{id}/:
+    get:
+      operationId: workouts_retrieve
+      description: Détail d'un plan visible + mise à jour / suppression selon les
+        droits.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - workouts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: workouts_partial_update
+      description: Détail d'un plan visible + mise à jour / suppression selon les
+        droits.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - workouts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkoutRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: workouts_destroy
+      description: Détail d'un plan visible + mise à jour / suppression selon les
+        droits.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - workouts
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/workouts/{id}/exercises/:
+    put:
+      operationId: workouts_exercises_replace
+      description: |-
+        Remplacement ordonné des exercices d'un plan (``PUT .../exercises/``).
+
+        Le corps de la demande est ``{"exercises": [...]}`` : liste COMPLÈTE des
+        lignes dans l'ordre souhaité (doublons refusés en validation, visibilité
+        de chaque exercice contrôlée en service). La réponse renvoie les lignes
+        réindexées 1..N.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - workouts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplaceWorkoutExercisesRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReplaceWorkoutExercisesRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReplaceWorkoutExercisesRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWorkoutExerciseList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     AccessGrant:
@@ -3150,6 +4025,21 @@ components:
           type: string
       required:
       - date_of_birth
+    AthleteReference:
+      type: object
+      description: Référence compacte d'un profil sportif (``id`` + ``sport``).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sport:
+          type: string
+          readOnly: true
+          title: Sport principal
+      required:
+      - id
+      - sport
     BlankEnum:
       enum:
       - ''
@@ -3510,6 +4400,138 @@ components:
           $ref: '#/components/schemas/ErrorPayload'
       required:
       - error
+    Exercise:
+      type: object
+      description: Exercice ; ``editable`` est calculé pour l'utilisateur courant.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          title: Nom
+          maxLength: 200
+        description:
+          type: string
+        movement_type:
+          allOf:
+          - $ref: '#/components/schemas/MovementTypeEnum'
+          title: Type de mouvement
+        default_parameters:
+          title: Paramètres par défaut
+          description: 'JSON : reps cibles, séries, tempo… (ex. {"target_reps": 10}).'
+        is_global:
+          type: boolean
+          readOnly: true
+          title: Global
+        is_archived:
+          type: boolean
+          title: Archivé
+        muscles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExerciseMuscle'
+          readOnly: true
+        editable:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - editable
+      - id
+      - is_global
+      - muscles
+      - name
+      - updated_at
+    ExerciseMuscle:
+      type: object
+      description: Rôle d'un muscle dans un exercice (lecture, muscle imbriqué).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        muscle:
+          allOf:
+          - $ref: '#/components/schemas/Muscle'
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/ExerciseMuscleRoleEnum'
+          readOnly: true
+          title: Rôle
+      required:
+      - id
+      - muscle
+      - role
+    ExerciseMuscleRoleEnum:
+      enum:
+      - primary
+      - secondary
+      - stabilizer
+      type: string
+      description: |-
+        * `primary` - Principal
+        * `secondary` - Secondaire
+        * `stabilizer` - Stabilisateur
+    ExerciseReference:
+      type: object
+      description: |-
+        Référence compacte d'un exercice dans une ligne de plan.
+
+        Seuls ``id``, ``name`` et ``movement_type`` : le reste du contenu
+        (description, muscles, paramètres par défaut) ne fuit pas via un plan —
+        un exercice personnel référencé par son auteur y compris.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+        movement_type:
+          allOf:
+          - $ref: '#/components/schemas/MovementTypeEnum'
+          readOnly: true
+          title: Type de mouvement
+      required:
+      - id
+      - movement_type
+      - name
+    ExerciseRequest:
+      type: object
+      description: Exercice ; ``editable`` est calculé pour l'utilisateur courant.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nom
+          maxLength: 200
+        description:
+          type: string
+        movement_type:
+          allOf:
+          - $ref: '#/components/schemas/MovementTypeEnum'
+          title: Type de mouvement
+        default_parameters:
+          title: Paramètres par défaut
+          description: 'JSON : reps cibles, séries, tempo… (ex. {"target_reps": 10}).'
+        is_archived:
+          type: boolean
+          title: Archivé
+      required:
+      - name
     GranteeTypeEnum:
       enum:
       - coach
@@ -3578,6 +4600,86 @@ components:
           type: string
       required:
       - message
+    MovementTypeEnum:
+      enum:
+      - compound
+      - isolation
+      - isometric
+      type: string
+      description: |-
+        * `compound` - Polyarticulaire
+        * `isolation` - Monoarticulaire
+        * `isometric` - Isométrique
+    Muscle:
+      type: object
+      description: Entrée du catalogue des muscles (lecture seule), groupe imbriqué.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+        latin_name:
+          type: string
+          readOnly: true
+          nullable: true
+          title: Nom latin
+        muscle_group:
+          allOf:
+          - $ref: '#/components/schemas/MuscleGroup'
+          readOnly: true
+        region:
+          type: string
+          readOnly: true
+          title: Région
+          description: Localisation précise au sein du groupe (ex. face antérieure
+            de la cuisse).
+        side_relevant:
+          type: boolean
+          readOnly: true
+          title: Latéralisé
+          description: Le muscle a une version gauche/droite (False pour les muscles
+            médians).
+      required:
+      - code
+      - id
+      - latin_name
+      - muscle_group
+      - name
+      - region
+      - side_relevant
+    MuscleGroup:
+      type: object
+      description: Entrée du catalogue des groupes musculaires (lecture seule).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+        body_region:
+          type: string
+          readOnly: true
+          title: Région du corps
+          description: 'Région au sens large (convention snake_case : upper_limb,
+            lower_limb, trunk…).'
+      required:
+      - body_region
+      - code
+      - id
+      - name
     PaginatedAccessGrantList:
       type: object
       required:
@@ -3716,6 +4818,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DeviceModel'
+    PaginatedExerciseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Exercise'
+    PaginatedMuscleGroupList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MuscleGroup'
+    PaginatedMuscleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Muscle'
     PaginatedTeamList:
       type: object
       required:
@@ -3762,6 +4933,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TeamMembership'
+    PaginatedWorkoutExerciseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkoutExercise'
+    PaginatedWorkoutList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Workout'
     PasswordChangeRequest:
       type: object
       description: Changement de mot de passe (utilisateur authentifié).
@@ -3866,6 +5083,27 @@ components:
           maxLength: 50
         calibration_defaults:
           title: Défauts de calibration
+    PatchedExerciseRequest:
+      type: object
+      description: Exercice ; ``editable`` est calculé pour l'utilisateur courant.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nom
+          maxLength: 200
+        description:
+          type: string
+        movement_type:
+          allOf:
+          - $ref: '#/components/schemas/MovementTypeEnum'
+          title: Type de mouvement
+        default_parameters:
+          title: Paramètres par défaut
+          description: 'JSON : reps cibles, séries, tempo… (ex. {"target_reps": 10}).'
+        is_archived:
+          type: boolean
+          title: Archivé
     PatchedTeamRequest:
       type: object
       description: Équipe (vue par ses membres).
@@ -3896,6 +5134,18 @@ components:
           minLength: 1
           title: Fuseau horaire (IANA)
           maxLength: 60
+    PatchedWorkoutRequest:
+      type: object
+      description: Plan d'entraînement (lecture) ; ``editable`` est calculé pour le
+        courant.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nom
+          maxLength: 200
+        notes:
+          type: string
     RefreshRequest:
       type: object
       description: |-
@@ -3931,16 +5181,19 @@ components:
       required:
       - email
       - password
-    RoleEnum:
-      enum:
-      - owner
-      - coach
-      - athlete
-      type: string
+    ReplaceWorkoutExercisesRequest:
+      type: object
       description: |-
-        * `owner` - Propriétaire
-        * `coach` - Coach
-        * `athlete` - Sportif
+        Remplacement de la liste ordonnée d'un plan (``PUT .../exercises/``).
+
+        ``exercises`` est la liste COMPLÈTE des lignes, dans l'ordre souhaité :
+        le service réindexe 1..N et remplace atomiquement les lignes existantes.
+        Une liste vide est autorisée (plan sans exercice).
+      properties:
+        exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkoutExerciseInputRequest'
     SexEnum:
       enum:
       - female
@@ -4006,7 +5259,7 @@ components:
           readOnly: true
         role:
           allOf:
-          - $ref: '#/components/schemas/RoleEnum'
+          - $ref: '#/components/schemas/TeamMembershipRoleEnum'
           readOnly: true
           title: Rôle
         status:
@@ -4025,6 +5278,16 @@ components:
       - role
       - status
       - user_id
+    TeamMembershipRoleEnum:
+      enum:
+      - owner
+      - coach
+      - athlete
+      type: string
+      description: |-
+        * `owner` - Propriétaire
+        * `coach` - Coach
+        * `athlete` - Sportif
     TeamMembershipStatusEnum:
       enum:
       - pending
@@ -4108,6 +5371,123 @@ components:
       - email_verified_at
       - id
       - is_active
+    Workout:
+      type: object
+      description: Plan d'entraînement (lecture) ; ``editable`` est calculé pour le
+        courant.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          title: Nom
+          maxLength: 200
+        athlete:
+          allOf:
+          - $ref: '#/components/schemas/AthleteReference'
+          readOnly: true
+        notes:
+          type: string
+        exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkoutExercise'
+          readOnly: true
+        editable:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - athlete
+      - created_at
+      - editable
+      - exercises
+      - id
+      - name
+      - updated_at
+    WorkoutExercise:
+      type: object
+      description: 'Ligne d''un plan (lecture) : exercice en référence compacte.'
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exercise:
+          allOf:
+          - $ref: '#/components/schemas/ExerciseReference'
+          readOnly: true
+        order:
+          type: integer
+          readOnly: true
+          title: Ordre
+          description: Position 1-based dans le plan.
+        target_sets:
+          type: integer
+          readOnly: true
+          title: Séries cibles
+        target_reps:
+          type: integer
+          readOnly: true
+          title: Reps cibles
+        parameters:
+          readOnly: true
+          title: Paramètres
+          description: 'JSON : tempo, repos, notes par exercice… (ex. {"tempo": "3-1-2"}).'
+      required:
+      - exercise
+      - id
+      - order
+      - parameters
+      - target_reps
+      - target_sets
+    WorkoutExerciseInputRequest:
+      type: object
+      description: |-
+        Une entrée de la liste ordonnée du remplacement d'exercices.
+
+        ``exercise`` est une pk UUID ; la visibilité de l'exercice pour le
+        demandeur (global ou personnel du demandeur) est contrôlée en service —
+        référencer un exercice invisible serait une fuite de son existence via
+        les lignes du plan.
+      properties:
+        exercise:
+          type: string
+          format: uuid
+        target_sets:
+          type: integer
+          minimum: 1
+        target_reps:
+          type: integer
+          minimum: 1
+        parameters: {}
+      required:
+      - exercise
+      - target_reps
+      - target_sets
+    WorkoutRequest:
+      type: object
+      description: Plan d'entraînement (lecture) ; ``editable`` est calculé pour le
+        courant.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nom
+          maxLength: 200
+        notes:
+          type: string
+      required:
+      - name
   securitySchemes:
     jwtAuth:
       type: http
