@@ -19,12 +19,12 @@ Communication avec les capteurs (module PC / mobile), réception des données (f
 - `GET /api/v1/device-models/` (lecture seule pour les utilisateurs)
 
 ## Tâches
-- [ ] App `devices`, modèles, migrations.
-- [ ] Un utilisateur voit ses appareils ; un coach voit ceux de ses sportifs uniquement avec le scope `devices:read` (utiliser `core.access` de la feature 03).
-- [ ] Contrôle du `serial_number` dupliqué (message d'erreur clair).
-- [ ] Service `touch_device(device)` pour mettre à jour `last_seen_at` (utilisé par l'ingestion).
-- [ ] Seed du catalogue : un modèle `prototype_v1` via fixture ou migration de données.
-- [ ] Admin Django pour `DeviceModel`.
+- [x] App `devices`, modèles, migrations.
+- [x] Un utilisateur voit ses appareils ; un coach voit ceux de ses sportifs uniquement avec le scope `devices:read` (utiliser `core.access` de la feature 03).
+- [x] Contrôle du `serial_number` dupliqué (message d'erreur clair).
+- [x] Service `touch_device(device)` pour mettre à jour `last_seen_at` (utilisé par l'ingestion).
+- [x] Seed du catalogue : un modèle `prototype_v1` via fixture ou migration de données.
+- [x] Admin Django pour `DeviceModel`.
 
 ## Tests
 - CRUD, doublon de serial, isolation entre utilisateurs, accès coach avec/sans scope, désactivation logique.
