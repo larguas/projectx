@@ -23,12 +23,12 @@ Séances d'acquisition (feature 06), analyses.
 - `PUT /api/v1/workouts/{id}/exercises/` (remplacement de la liste ordonnée)
 
 ## Tâches
-- [ ] Apps `exercises` et `workouts`.
-- [ ] Exercices globaux : lecture pour tous, écriture réservée au staff. Exercices personnalisés : propriétaire seulement.
-- [ ] Seed : groupes musculaires et ~15 exercices courants (migration de données ou commande `seed_exercises`).
-- [ ] Filtres : groupe musculaire, recherche texte, global/personnel.
-- [ ] Workouts liés à un sportif : respecter `core.access` (scope `sessions:read`/écriture selon besoin, à documenter).
-- [ ] Validation de l'ordre dans `WorkoutExercise`.
+- [x] Apps `exercises` et `workouts`.
+- [x] Exercices globaux : lecture pour tous, écriture réservée au staff. Exercices personnalisés : propriétaire seulement.
+- [x] Seed : groupes musculaires et ~15 exercices courants (migration de données ou commande `seed_exercises`).
+- [x] Filtres : groupe musculaire, recherche texte, global/personnel.
+- [x] Workouts liés à un sportif : respecter `core.access` (scope `sessions:read`/écriture selon besoin, à documenter).
+- [x] Validation de l'ordre dans `WorkoutExercise`.
 
 ## Tests
 - Visibilité global/personnel, droits d'écriture, filtres, remplacement ordonné d'un workout, accès coach.
@@ -40,8 +40,8 @@ Les groupes musculaires sont trop grossiers pour le placement des capteurs et l'
 - `exercises.Muscle` : `code` (unique), `name`, `latin_name` (nullable), `muscle_group` (FK `MuscleGroup`), `region`, `side_relevant` (bool : le muscle a une version gauche/droite).
 - `exercises.ExerciseMuscle` : `exercise`, `muscle`, `role` (`primary`/`secondary`/`stabilizer`).
 - Endpoint : `GET /api/v1/muscles/` (filtre par groupe, recherche texte).
-- [ ] Modèles, migrations, admin.
-- [ ] Seed : ~30 muscles courants (biceps brachii, triceps brachii, vastus lateralis, vastus medialis, rectus femoris, biceps femoris, gluteus maximus, gastrocnemius, tibialis anterior, erector spinae, trapezius, deltoid, pectoralis major, latissimus dorsi, rectus abdominis...) rattachés à leurs groupes ; exercices seedés reliés à leurs muscles.
+- [x] Modèles, migrations, admin.
+- [x] Seed : ~30 muscles courants (biceps brachii, triceps brachii, vastus lateralis, vastus medialis, rectus femoris, biceps femoris, gluteus maximus, gastrocnemius, tibialis anterior, erector spinae, trapezius, deltoid, pectoralis major, latissimus dorsi, rectus abdominis...) rattachés à leurs groupes ; exercices seedés reliés à leurs muscles.
 - [ ] Les features 05b (setups) et 06 (canaux de séance) référencent `Muscle`, pas `MuscleGroup`.
 - Tests : filtres, rôle d'un muscle dans un exercice, intégrité des références du seed.
 
