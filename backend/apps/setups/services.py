@@ -26,10 +26,10 @@ Règles :
   vue, pas ici.
 
 Les erreurs lèvent ``SetupsServiceError`` avec un code stable mappé en HTTP
-par les vues (``forbidden`` -> 403, ``setup_frozen`` / ``has_newer_version`` /
-``has_calibrations`` -> 409). Les cas « non lisible » sont gérés en amont par
-les vues (404 — l'existence n'est pas révélée, même convention que les
-features 04/05).
+par les vues : ``forbidden`` -> 403 ; ``setup_frozen`` / ``has_newer_version``
+/ ``has_calibrations`` / ``name_taken`` / ``already_invalidated`` -> 409. Les
+cas « non lisible » sont gérés en amont par les vues (404 — l'existence n'est
+pas révélée, même convention que les features 04/05).
 """
 
 from __future__ import annotations
@@ -79,11 +79,22 @@ def create_setup(user, data: dict) -> SensorSetup:
     (``name``, ``athlete``, ``notes``). Sans canaux au départ, le niveau de
     détail effectif est ``simple`` ; il sera recalculé à la première
     déclaration de canaux (``set_channels``).
+
+    Un nom déjà porté par une version existante du même sportif est refusé
+    (``name_taken``, 409) : l'identité d'un setup est ``(athlete, name,
+    version)``, et créer un doublon v1 casserait la lignée — pour modifier un
+    placement existant on passe par ``new_version``.
     """
     from apps.setups.models import SensorSetup
 
     athlete = data["athlete"]
     _assert_write_access(user, athlete)
+    if SensorSetup.objects.filter(athlete=athlete, name=data["name"]).exists():
+        raise SetupsServiceError(
+            "name_taken",
+            "Ce sportif a déjà un setup de ce nom ; modifiez-le ou créez une "
+            "nouvelle version (POST /setups/{id}/new-version/).",
+        )
     return SensorSetup.objects.create(
         athlete=athlete,
         name=data["name"],
@@ -114,14 +125,20 @@ def update_setup(user, setup: SensorSetup, data: dict) -> SensorSetup:
 def delete_setup(user, setup: SensorSetup) -> None:
     """Supprime un setup non utilisé et sans versions enfants.
 
-    Refusé si le setup est utilisé par une séance (``setup_frozen``) ou s'il
-    existe des versions qui en descendent (``has_newer_version`` — la lignée
-    ``parent`` ne doit pas être cassée). Les canaux sont supprimés en cascade ;
-    les calibrations, elles, sont protégées (``PROTECT``) : un canal portant
-    une calibration empêche le remplacement/suppression (``has_calibrations``).
+    Refusé si le setup est utilisé par une séance (``setup_frozen``), s'il
+    porte des calibrations (``has_calibrations`` — les calibrations ne sont
+    jamais détruites silencieusement, même en cascade) ou s'il existe des
+    versions qui en descendent (``has_newer_version`` — la lignée ``parent``
+    ne doit pas être cassée). Les canaux sans calibration sont supprimés en
+    cascade.
     """
     _assert_write_access(user, setup.athlete)
     _assert_not_used(setup)
+    if setup.calibrations.exists() or setup.channels.filter(calibrations__isnull=False).exists():
+        raise SetupsServiceError(
+            "has_calibrations",
+            "Ce setup porte des calibrations ; il ne peut pas être supprimé.",
+        )
     if setup.child_versions.exists():
         raise SetupsServiceError(
             "has_newer_version",
