@@ -37,18 +37,18 @@ Facturation, notifications d'invitation (simple statut en base pour l'instant).
 - `GET /api/v1/athletes/` côté coach : retourne uniquement les sportifs avec grant actif.
 
 ## Tâches
-- [ ] Créer les apps `athletes`, `coaches`, `teams` (+ `AccessGrant`).
-- [ ] Contraintes DB (unicité, un seul type de grantee rempli via `CheckConstraint`).
-- [ ] **Module central** `core/access.py` (ou `apps/teams/access.py`) :
+- [x] Créer les apps `athletes`, `coaches`, `teams` (+ `AccessGrant`).
+- [x] Contraintes DB (unicité, un seul type de grantee rempli via `CheckConstraint`).
+- [x] **Module central** `core/access.py` (ou `apps/teams/access.py`) :
   - `can_access_athlete(user, athlete, scope) -> bool`
   - `visible_athletes(user, scope) -> QuerySet`
   - Tests exhaustifs : cette API sera utilisée par toutes les features suivantes.
-- [ ] Permission DRF `HasAthleteScope(scope)` réutilisable.
-- [ ] Services : `grant_access`, `accept_grant`, `revoke_grant`, `add_member`, `remove_member`.
-- [ ] Un grant révoqué ou expiré n'ouvre plus aucun accès (vérifié dans les sélecteurs, pas seulement en vue).
-- [ ] Création automatique du profil sportif à la demande (endpoint dédié ou service), pas à l'inscription.
-- [ ] Filtres et pagination sur les listes.
-- [ ] Admin Django.
+- [x] Permission DRF `HasAthleteScope(scope)` réutilisable.
+- [x] Services : `grant_access`, `accept_grant`, `revoke_grant`, `add_member`, `remove_member`.
+- [x] Un grant révoqué ou expiré n'ouvre plus aucun accès (vérifié dans les sélecteurs, pas seulement en vue).
+- [x] Création automatique du profil sportif à la demande (endpoint dédié ou service), pas à l'inscription.
+- [x] Filtres et pagination sur les listes.
+- [x] Admin Django.
 
 ## Tests (prioritaires)
 - Matrice d'accès : propriétaire, coach avec grant actif, coach sans grant, coach avec grant révoqué/expiré, membre d'équipe avec/sans grant, admin.
@@ -61,18 +61,18 @@ Facturation, notifications d'invitation (simple statut en base pour l'instant).
 
 ### Audit minimal dès cette feature
 Les autorisations de partage sont sensibles : on les trace dès leur création.
-- [ ] Créer l'app `audit` avec le modèle `AuditEvent` (`actor`, `action`, `target_type`, `target_id`, `athlete` nullable, `ip`, `user_agent`, `metadata` JSON, `created_at`), table en insertion seule.
-- [ ] Service `audit.services.record_event(actor, action, target, athlete=None, metadata=None, request=None)`.
-- [ ] L'appeler dans `grant_access`, `accept_grant`, `revoke_grant`, `add_member`, `remove_member` et à chaque lecture de données d'un sportif par un coach (au minimum la liste et le détail des sportifs).
-- [ ] Tests : un événement par action listée, aucun champ sensible dans `metadata`.
+- [x] Créer l'app `audit` avec le modèle `AuditEvent` (`actor`, `action`, `target_type`, `target_id`, `athlete` nullable, `ip`, `user_agent`, `metadata` JSON, `created_at`), table en insertion seule.
+- [x] Service `audit.services.record_event(actor, action, target, athlete=None, metadata=None, request=None)`.
+- [x] L'appeler dans `grant_access`, `accept_grant`, `revoke_grant`, `add_member`, `remove_member` et à chaque lecture de données d'un sportif par un coach (au minimum la liste et le détail des sportifs).
+- [x] Tests : un événement par action listée, aucun champ sensible dans `metadata`.
 - Les endpoints de consultation, l'export et la politique de conservation restent en feature 14.
 
 ### Scopes centralisés
-- [ ] Remplir `core/scopes.py` : `sessions:read`, `sessions:write`, `analytics:read`, `reports:read`, `devices:read`, `setups:read`, `setups:write`. Validation d'un grant contre cette liste.
-- [ ] Un grant peut combiner plusieurs scopes ; les scopes inconnus sont refusés.
+- [x] Remplir `core/scopes.py` : `sessions:read`, `sessions:write`, `analytics:read`, `reports:read`, `devices:read`, `setups:read`, `setups:write`. Validation d'un grant contre cette liste.
+- [x] Un grant peut combiner plusieurs scopes ; les scopes inconnus sont refusés.
 
 ### Vérification d'email
-- [ ] Création/acceptation d'un grant refusées si `email_verified_at` est vide (permission `IsEmailVerified`, feature 02).
+- [x] Création/acceptation d'un grant refusées si `email_verified_at` est vide (permission `IsEmailVerified`, feature 02).
 
 ## Critères d'acceptation
 - `can_access_athlete` et `visible_athletes` documentés (docstring + exemple) et couverts à 100 %.
