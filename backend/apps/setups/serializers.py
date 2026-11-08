@@ -309,3 +309,40 @@ class PlacementGuideSerializer(serializers.ModelSerializer):
         model = PlacementGuide
         fields = ("id", "muscle", "title", "instructions", "reference", "image")
         read_only_fields = fields
+
+
+class SetupComparisonSerializer(serializers.Serializer):
+    """Comparabilité de deux setups (réponse de ``GET /setups/compare/``).
+
+    ``level`` est l'un de ``identical`` / ``equivalent`` / ``approximate`` /
+    ``different`` / ``unknown`` ; ``reasons`` sont des chaînes stables et
+    lisibles, réutilisables telles quelles par l'IA (cf.
+    ``services.compare_setups``).
+    """
+
+    level = serializers.ChoiceField(
+        choices=["identical", "equivalent", "approximate", "different", "unknown"]
+    )
+    reasons = serializers.ListField(child=serializers.CharField())
+
+
+class CompareSetupsQuerySerializer(serializers.Serializer):
+    """Paramètres de requête de ``GET /setups/compare/?a={id}&b={id}``."""
+
+    a = serializers.UUIDField()
+    b = serializers.UUIDField()
+
+
+class AthleteCalibrationsQuerySerializer(serializers.Serializer):
+    """Filtres optionnels de ``GET /athletes/{id}/calibrations/``.
+
+    - ``setup`` : uuid d'une version précise du setup ;
+    - ``type`` : ``mvc`` ou ``rest_baseline`` ;
+    - ``applicable`` : ``true``/``false`` — non invalidée et non expirée (la
+      condition « rattachée au setup de la séance » relève du service
+      ``applicable_calibrations``, pas d'un filtre de liste).
+    """
+
+    setup = serializers.UUIDField(required=False)
+    type = serializers.ChoiceField(choices=Calibration.Type.choices, required=False)
+    applicable = serializers.BooleanField(required=False)
