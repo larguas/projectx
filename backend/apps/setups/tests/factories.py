@@ -55,7 +55,10 @@ class CalibrationFactory(DjangoModelFactory):
         model = Calibration
 
     setup = factory.SubFactory(SensorSetupFactory)
-    setup_channel = factory.RelatedFactory(SetupChannelFactory, "setup")
+    # ``LazyAttribute`` (et non ``RelatedFactory``, qui ne s'exécute qu'APRÈS
+    # la sauvegarde du parent — trop tard pour une colonne NOT NULL) : le canal
+    # est créé et lié au setup de la calibration AVANT l'INSERT.
+    setup_channel = factory.LazyAttribute(lambda o: SetupChannelFactory(setup=o.setup))
     athlete = factory.LazyAttribute(lambda o: o.setup.athlete)
     type = Calibration.Type.MVC
     values = {"mvc_rms": 42.5}
