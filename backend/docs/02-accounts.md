@@ -28,16 +28,16 @@ Profils sportif/coach, partage de données (feature 03), abonnements.
 | GET/PATCH | `/api/v1/users/me/` | Profil |
 
 ## Tâches
-- [ ] Créer `apps/accounts`, déclarer `AUTH_USER_MODEL` **avant** la première migration.
-- [ ] `UserManager` (create_user, create_superuser).
-- [ ] simplejwt : durée access courte, refresh avec rotation + blacklist (`rest_framework_simplejwt.token_blacklist`).
-- [ ] Serializers et services (`register_user`, `change_password`, ...).
-- [ ] Validation des mots de passe (validateurs Django), politique documentée.
-- [ ] Mots de passe oubliés : token signé à durée limitée, email via backend console en dev (`EMAIL_BACKEND`).
-- [ ] Throttling sur login et reset (DRF throttle scopes).
-- [ ] Permission par défaut globale `IsAuthenticated`, endpoints publics déclarés explicitement.
-- [ ] Admin Django pour `User`.
-- [ ] Factories de test (`UserFactory`) réutilisables par les autres apps dans `core/testing` ou `apps/accounts/tests/factories.py`.
+- [x] Créer `apps/accounts`, déclarer `AUTH_USER_MODEL` **avant** la première migration.
+- [x] `UserManager` (create_user, create_superuser).
+- [x] simplejwt : durée access courte, refresh avec rotation + blacklist (`rest_framework_simplejwt.token_blacklist`).
+- [x] Serializers et services (`register_user`, `change_password`, ...).
+- [x] Validation des mots de passe (validateurs Django), politique documentée.
+- [x] Mots de passe oubliés : token signé à durée limitée, email via backend console en dev (`EMAIL_BACKEND`).
+- [x] Throttling sur login et reset (DRF throttle scopes).
+- [x] Permission par défaut globale `IsAuthenticated`, endpoints publics déclarés explicitement.
+- [x] Admin Django pour `User`.
+- [x] Factories de test (`UserFactory`) réutilisables par les autres apps dans `core/testing` ou `apps/accounts/tests/factories.py`.
 
 ## Tests
 - Inscription (succès, email dupliqué insensible à la casse, mot de passe faible).
