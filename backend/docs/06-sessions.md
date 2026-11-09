@@ -43,16 +43,16 @@ Toute autre transition renvoie `409`. Services dédiés (`start_session`, `compl
 - `GET /api/v1/athletes/{id}/sessions/suggested-setup/` : renvoie le setup de la dernière séance (proposition « même placement que la dernière fois ? »).
 
 ## Tâches
-- [ ] App, modèles, migrations.
-- [ ] Services de transition avec verrouillage (`select_for_update`).
-- [ ] Création : vérifier le droit du créateur sur le sportif (`core.access`, scope `sessions:write`), que les appareils lui sont accessibles, et que les canaux sont compatibles avec les capacités du modèle d'appareil.
-- [ ] Copie des canaux depuis le setup et marquage `setup_declared`.
-- [ ] Calibration : validation `session_type=calibration`.
-- [ ] Hook `on_session_completed(session)` (vide ici, branché en features 07 et 09) ; il reçoit `session_type` pour que la feature 09 puisse créer la calibration.
-- [ ] Annotations : CRUD, validation du `kind`, tri par `offset_ms`.
-- [ ] Lecture : sportif propriétaire + coachs/équipes avec scope `sessions:read`.
-- [ ] Filtres : sportif, statut, dates, exercice, appareil, `session_type`, `setup_declared`.
-- [ ] Admin Django.
+- [x] App, modèles, migrations.
+- [x] Services de transition avec verrouillage (`select_for_update`).
+- [x] Création : vérifier le droit du créateur sur le sportif (`core.access`, scope `sessions:write`), que les appareils lui sont accessibles, et que les canaux sont compatibles avec les capacités du modèle d'appareil.
+- [x] Copie des canaux depuis le setup et marquage `setup_declared`.
+- [x] Calibration : validation `session_type=calibration`.
+- [x] Hook `on_session_completed(session)` (vide ici, branché en features 07 et 09) ; il reçoit `session_type` pour que la feature 09 puisse créer la calibration.
+- [x] Annotations : CRUD, validation du `kind`, tri par `offset_ms`.
+- [x] Lecture : sportif propriétaire + coachs/équipes avec scope `sessions:read`.
+- [x] Filtres : sportif, statut, dates, exercice, appareil, `session_type`, `setup_declared`.
+- [x] Admin Django.
 
 ## Tests
 - Chaque transition valide/invalide, concurrence basique.
