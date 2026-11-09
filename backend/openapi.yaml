@@ -491,6 +491,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/athletes/{athlete_pk}/sessions/suggested-setup/:
+    get:
+      operationId: athletes_sessions_suggested_setup
+      description: |-
+        Setup de la dernière séance d'un sportif (``GET /athletes/{id}/sessions/suggested-setup/``).
+
+        Proposition « même placement que la dernière fois ? » : renvoie la
+        référence compacte du setup de la DERNIÈRE séance du sportif — ou
+        ``{"setup": null}`` s'il n'en a pas encore, ou si sa dernière séance a été
+        créée sans setup. 404 si le profil est inconnu ou non couvert par un grant
+        actif au scope ``sessions:read`` (même convention que les routes imbriquées
+        05b). La lecture par un non-propriétaire est tracée (``session.viewed`` sur
+        la séance concernée).
+      parameters:
+      - in: path
+        name: athlete_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - athletes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestedSetup'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/athletes/{athlete_pk}/setups/current/:
     get:
       operationId: athletes_setups_current_list
@@ -3042,6 +3109,1158 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/sessions/:
+    get:
+      operationId: sessions_list
+      description: Liste des séances visibles + création d'une séance pour un sportif.
+      parameters:
+      - in: query
+        name: athlete
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: created_at_from
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: created_at_to
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: device
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: exercise
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: session_type
+        schema:
+          type: string
+          title: Type de séance
+          enum:
+          - calibration
+          - test
+          - training
+        description: |-
+          * `training` - Entraînement
+          * `calibration` - Calibration
+          * `test` - Test
+      - in: query
+        name: setup_declared
+        schema:
+          type: boolean
+      - in: query
+        name: status
+        schema:
+          type: string
+          title: Statut
+          enum:
+          - cancelled
+          - completed
+          - created
+          - failed
+          - recording
+        description: |-
+          * `created` - Créée
+          * `recording` - Enregistrement
+          * `completed` - Terminée
+          * `cancelled` - Annulée
+          * `failed` - Échouée
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSessionListList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: sessions_create
+      description: Liste des séances visibles + création d'une séance pour un sportif.
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/sessions/{id}/:
+    get:
+      operationId: sessions_retrieve
+      description: |-
+        Détail d'une séance visible + mise à jour pendant ``created``.
+
+        PATCH limité à ``notes`` / ``acquisition_config`` (contrôlé en service —
+        ``locked``, 409 hors ``created``) ; le statut ne passe JAMAIS par un
+        sérialiseur (transitions dédiées ci-dessous).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDetail'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: sessions_partial_update
+      description: |-
+        Détail d'une séance visible + mise à jour pendant ``created``.
+
+        PATCH limité à ``notes`` / ``acquisition_config`` (contrôlé en service —
+        ``locked``, 409 hors ``created``) ; le statut ne passe JAMAIS par un
+        sérialiseur (transitions dédiées ci-dessous).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDetail'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/sessions/{id}/annotations/:
+    get:
+      operationId: sessions_annotations_list
+      description: |-
+        Annotations d'une séance : liste triée par ``offset_ms`` + création.
+
+        Création autorisée pendant ``recording`` et après ``completed`` (corrections
+        du coach), jamais sur ``cancelled`` (``annotation_blocked``, 409) — contrôlé
+        en service sous verrouillage. La lecture par un non-propriétaire est tracée
+        (``session.viewed``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAnnotationList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: sessions_annotations_create
+      description: |-
+        Annotations d'une séance : liste triée par ``offset_ms`` + création.
+
+        Création autorisée pendant ``recording`` et après ``completed`` (corrections
+        du coach), jamais sur ``cancelled`` (``annotation_blocked``, 409) — contrôlé
+        en service sous verrouillage. La lecture par un non-propriétaire est tracée
+        (``session.viewed``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Annotation'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/sessions/{id}/annotations/{aid}/:
+    get:
+      operationId: sessions_annotations_retrieve
+      description: |-
+        Détail d'une annotation + mise à jour / suppression.
+
+        ``PATCH`` limité à ``kind`` / ``offset_ms`` / ``text`` / ``metadata``
+        (``session``, ``author`` et ``created_at`` ne sont jamais modifiables) ;
+        mêmes règles de statut que la création (``annotation_blocked``, 409 sur une
+        séance annulée).
+      parameters:
+      - in: path
+        name: aid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Annotation'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: sessions_annotations_partial_update
+      description: |-
+        Détail d'une annotation + mise à jour / suppression.
+
+        ``PATCH`` limité à ``kind`` / ``offset_ms`` / ``text`` / ``metadata``
+        (``session``, ``author`` et ``created_at`` ne sont jamais modifiables) ;
+        mêmes règles de statut que la création (``annotation_blocked``, 409 sur une
+        séance annulée).
+      parameters:
+      - in: path
+        name: aid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Annotation'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: sessions_annotations_destroy
+      description: |-
+        Détail d'une annotation + mise à jour / suppression.
+
+        ``PATCH`` limité à ``kind`` / ``offset_ms`` / ``text`` / ``metadata``
+        (``session``, ``author`` et ``created_at`` ne sont jamais modifiables) ;
+        mêmes règles de statut que la création (``annotation_blocked``, 409 sur une
+        séance annulée).
+      parameters:
+      - in: path
+        name: aid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/sessions/{id}/cancel/:
+    post:
+      operationId: sessions_cancel
+      description: 'Annulation d''une séance (``POST .../cancel/``) : ``created |
+        recording → cancelled``.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDetail'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/sessions/{id}/channels/:
+    get:
+      operationId: sessions_channels_list
+      description: |-
+        Canaux d'une séance : lecture (GET) et remplacement ATOMIQUE (PUT).
+
+        Le corps de la demande est ``{"channels": [...]}`` — liste COMPLÈTE des
+        canaux (``device`` obligatoire sur chaque canal, doublons
+        ``(device, channel_id)`` refusés en validation) ; le service re-dérive les
+        lignes ``SessionDevice`` (premier appareil distinct = primaire). Uniquement
+        pendant ``created`` (``locked``, 409). La lecture par un non-propriétaire
+        est tracée (``session.viewed``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSessionChannelList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: sessions_channels_replace
+      description: |-
+        Canaux d'une séance : lecture (GET) et remplacement ATOMIQUE (PUT).
+
+        Le corps de la demande est ``{"channels": [...]}`` — liste COMPLÈTE des
+        canaux (``device`` obligatoire sur chaque canal, doublons
+        ``(device, channel_id)`` refusés en validation) ; le service re-dérive les
+        lignes ``SessionDevice`` (premier appareil distinct = primaire). Uniquement
+        pendant ``created`` (``locked``, 409). La lecture par un non-propriétaire
+        est tracée (``session.viewed``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - sessions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplaceChannelsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReplaceChannelsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReplaceChannelsRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSessionChannelList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/sessions/{id}/complete/:
+    post:
+      operationId: sessions_complete
+      description: |-
+        Fin d'une séance (``POST .../complete/``) : ``recording → completed``.
+
+        Le hook ``on_session_completed`` est appelé en service APRÈS le commit —
+        vide en feature 06, branché en features 07 et 09.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDetail'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/sessions/{id}/devices/:
+    get:
+      operationId: sessions_devices_list
+      description: |-
+        Appareils d'une séance : lecture (GET) et remplacement intégral des RÔLES (PUT).
+
+        Le corps de la demande est ``{"devices": [{"device", "role"}...]}`` —
+        l'ensemble fourni doit être EXACTEMENT celui référencé par les canaux
+        (l'ajout ou le retrait d'un appareil passe par ``PUT /channels/``), au plus
+        un primaire. Uniquement pendant ``created`` (``locked``, 409). La lecture
+        par un non-propriétaire est tracée (``session.viewed``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSessionDeviceList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: sessions_devices_replace
+      description: |-
+        Appareils d'une séance : lecture (GET) et remplacement intégral des RÔLES (PUT).
+
+        Le corps de la demande est ``{"devices": [{"device", "role"}...]}`` —
+        l'ensemble fourni doit être EXACTEMENT celui référencé par les canaux
+        (l'ajout ou le retrait d'un appareil passe par ``PUT /channels/``), au plus
+        un primaire. Uniquement pendant ``created`` (``locked``, 409). La lecture
+        par un non-propriétaire est tracée (``session.viewed``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - sessions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplaceDevicesRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReplaceDevicesRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReplaceDevicesRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSessionDeviceList'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/sessions/{id}/start/:
+    post:
+      operationId: sessions_start
+      description: 'Démarrage d''une séance (``POST .../start/``) : ``created → recording``.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDetail'
+          description: ''
+        '400':
+          description: Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentification requise ou jeton invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ressource introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit avec l'état actuel de la ressource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/setups/:
     get:
       operationId: setups_list
@@ -4832,6 +6051,45 @@ components:
         * `active` - Actif
         * `revoked` - Révoqué
         * `expired` - Expiré
+    Annotation:
+      type: object
+      description: |-
+        Lecture d'une annotation (tri par ``offset_ms``, puis ``created_at``).
+
+        ``author`` n'est JAMAIS exposé (ni pk ni email) : l'accès à une annotation
+        est l'accès à la séance ; l'auteur reste une donnée interne.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/KindEnum'
+          readOnly: true
+          title: Type
+        offset_ms:
+          type: integer
+          readOnly: true
+          title: Décalage (ms)
+        text:
+          type: string
+          readOnly: true
+          title: Texte
+        metadata:
+          readOnly: true
+          title: Métadonnées
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - kind
+      - metadata
+      - offset_ms
+      - text
     AthleteProfile:
       type: object
       description: Profil sportif ; ``email`` est uniquement renseigné pour le propriétaire.
@@ -4973,7 +6231,7 @@ components:
           readOnly: true
         type:
           allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          - $ref: '#/components/schemas/CalibrationTypeEnum'
           readOnly: true
         values:
           readOnly: true
@@ -5031,6 +6289,14 @@ components:
       - valid_from
       - valid_until
       - values
+    CalibrationTypeEnum:
+      enum:
+      - mvc
+      - rest_baseline
+      type: string
+      description: |-
+        * `mvc` - Contraction maximale volontaire
+        * `rest_baseline` - Baseline au repos
     CheckStatus:
       type: object
       properties:
@@ -5088,6 +6354,18 @@ components:
           maxLength: 200
         bio:
           type: string
+    DataTypeEnum:
+      enum:
+      - emg_raw
+      - emg_envelope
+      - imu_accel
+      - imu_gyro
+      type: string
+      description: |-
+        * `emg_raw` - EMG brut
+        * `emg_envelope` - Enveloppe EMG
+        * `imu_accel` - Accéléromètre
+        * `imu_gyro` - Gyroscope
     DetailLevelEnum:
       enum:
       - simple
@@ -5615,6 +6893,24 @@ components:
           type: string
           default: ''
           maxLength: 300
+    KindEnum:
+      enum:
+      - set_start
+      - set_end
+      - rep_start
+      - rep_end
+      - note
+      - artifact
+      - sync_pulse
+      type: string
+      description: |-
+        * `set_start` - Début de série
+        * `set_end` - Fin de série
+        * `rep_start` - Début de répétition
+        * `rep_end` - Fin de répétition
+        * `note` - Note
+        * `artifact` - Artefact
+        * `sync_pulse` - Impulsion de synchronisation
     LevelEnum:
       enum:
       - identical
@@ -5776,6 +7072,9 @@ components:
         placement_unchanged:
           type: boolean
           default: false
+    NullEnum:
+      enum:
+      - null
     PaginatedAccessGrantList:
       type: object
       required:
@@ -5799,6 +7098,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AccessGrant'
+    PaginatedAnnotationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Annotation'
     PaginatedAthleteProfileList:
       type: object
       required:
@@ -6029,6 +7351,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SensorSetup'
+    PaginatedSessionChannelList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionChannel'
+    PaginatedSessionDeviceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionDevice'
+    PaginatedSessionListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionList'
     PaginatedSetupChannelList:
       type: object
       required:
@@ -6383,6 +7774,37 @@ components:
       required:
       - email
       - password
+    ReplaceChannelsRequest:
+      type: object
+      description: |-
+        Remplacement intégral des canaux (``PUT /sessions/{id}/channels/``).
+
+        ``channels`` est la liste COMPLÈTE des canaux de la séance : le service les
+        remplace atomiquement et re-dérive les appareils (premier appareil distinct
+        = primaire). Uniquement pendant ``created`` (``locked``, 409).
+      properties:
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionChannelInputRequest'
+      required:
+      - channels
+    ReplaceDevicesRequest:
+      type: object
+      description: |-
+        Remplacement intégral des rôles d'appareils (``PUT /sessions/{id}/devices/``).
+
+        ``devices`` est la liste COMPLÈTE des appareils de la séance avec leur rôle :
+        l'ensemble doit être exactement celui référencé par les canaux (l'ajout ou le
+        retrait d'un appareil passe par ``PUT /channels/``) ; au plus un primaire.
+        Uniquement pendant ``created`` (``locked``, 409).
+      properties:
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionDeviceInputRequest'
+      required:
+      - devices
     ReplaceWorkoutExercisesRequest:
       type: object
       description: |-
@@ -6479,6 +7901,531 @@ components:
       - placement_inherited_from_parent
       - updated_at
       - version
+    SessionChannel:
+      type: object
+      description: Lecture d'un canal de séance (muscle/côté figés, calibration gelée).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        device:
+          allOf:
+          - $ref: '#/components/schemas/SessionsDeviceReference'
+          readOnly: true
+        channel_id:
+          type: integer
+          readOnly: true
+          title: Canal du capteur
+        muscle:
+          allOf:
+          - $ref: '#/components/schemas/SessionsMuscleReference'
+          readOnly: true
+        side:
+          allOf:
+          - $ref: '#/components/schemas/SideEnum'
+          readOnly: true
+          title: Côté
+        data_type:
+          allOf:
+          - $ref: '#/components/schemas/DataTypeEnum'
+          readOnly: true
+          title: Type de donnée
+        units:
+          type: string
+          readOnly: true
+          title: Unités
+        calibration:
+          readOnly: true
+          nullable: true
+          title: Calibration (copie figée)
+          description: Copie figée des informations de calibration utiles pour ce
+            canal.
+      required:
+      - calibration
+      - channel_id
+      - data_type
+      - device
+      - id
+      - muscle
+      - side
+      - units
+    SessionChannelInputRequest:
+      type: object
+      description: |-
+        Déclaration manuelle d'un canal (création sans setup, ou ``PUT /channels/``).
+
+        ``device`` est OBLIGATOIRE sur chaque canal ; les canaux d'un même appareil
+        sont distincts (``(session, device, channel_id)`` unique — contrôlé ici pour
+        renvoyer une erreur de forme propre plutôt qu'une contrainte de base).
+      properties:
+        device:
+          type: string
+          format: uuid
+        channel_id:
+          type: integer
+          minimum: 1
+        muscle:
+          type: string
+          format: uuid
+        side:
+          allOf:
+          - $ref: '#/components/schemas/SideEnum'
+          default: na
+        data_type:
+          allOf:
+          - $ref: '#/components/schemas/DataTypeEnum'
+          default: emg_raw
+        units:
+          type: string
+          default: ''
+      required:
+      - channel_id
+      - device
+      - muscle
+    SessionDetail:
+      type: object
+      description: |-
+        Détail d'une séance : + canaux, appareils, annotations et ``editable``.
+
+        ``warnings`` reprend la même règle que la liste (et que la réponse de
+        création) — spec 06 : l'avertissement ``setup_not_declared`` est renvoyé
+        « dans la réponse ET le détail ».
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        athlete:
+          allOf:
+          - $ref: '#/components/schemas/SessionsAthleteReference'
+          readOnly: true
+        session_type:
+          allOf:
+          - $ref: '#/components/schemas/SessionTypeEnum'
+          readOnly: true
+          title: Type de séance
+        setup:
+          allOf:
+          - $ref: '#/components/schemas/SessionsSetupReference'
+          readOnly: true
+        setup_declared:
+          type: boolean
+          readOnly: true
+          title: Placement déclaré
+          description: 'False si la séance a été créée sans setup : l''API renvoie
+            alors un avertissement ``setup_not_declared`` (réponse et détail).'
+        exercise:
+          allOf:
+          - $ref: '#/components/schemas/SessionsExerciseReference'
+          readOnly: true
+        workout:
+          allOf:
+          - $ref: '#/components/schemas/SessionsWorkoutReference'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SessionStatusEnum'
+          readOnly: true
+          title: Statut
+        source:
+          allOf:
+          - $ref: '#/components/schemas/SourceEnum'
+          readOnly: true
+        protocol_version:
+          type: integer
+          readOnly: true
+          title: Version du protocole
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Démarrée le
+        ended_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Terminée le
+        calibration_type:
+          readOnly: true
+          nullable: true
+          title: Type de calibration
+          description: |-
+            Requis si ``session_type = calibration`` (mêmes valeurs que Calibration.type).
+
+            * `mvc` - Contraction maximale volontaire
+            * `rest_baseline` - Baseline au repos
+          oneOf:
+          - $ref: '#/components/schemas/CalibrationTypeEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        warnings:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+        acquisition_config:
+          readOnly: true
+          title: Configuration d'acquisition
+          description: 'JSON : sample_rate prévu, canaux, paramètres d''acquisition.'
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionChannel'
+          readOnly: true
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionDevice'
+          readOnly: true
+        annotations:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+        editable:
+          type: boolean
+          readOnly: true
+      required:
+      - acquisition_config
+      - annotations
+      - athlete
+      - calibration_type
+      - channels
+      - created_at
+      - devices
+      - editable
+      - ended_at
+      - exercise
+      - id
+      - notes
+      - protocol_version
+      - session_type
+      - setup
+      - setup_declared
+      - source
+      - started_at
+      - status
+      - warnings
+      - workout
+    SessionDevice:
+      type: object
+      description: Lecture d'un appareil de séance (rôle + décalage d'horloge, feature
+        07).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        device:
+          allOf:
+          - $ref: '#/components/schemas/SessionsDeviceReference'
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/SessionDeviceRoleEnum'
+          readOnly: true
+          title: Rôle
+        clock_offset_ms:
+          type: integer
+          readOnly: true
+          nullable: true
+          title: Décalage d'horloge (ms)
+          description: Offset estimé par rapport à l'horloge de l'appareil primaire
+            (feature 07).
+      required:
+      - clock_offset_ms
+      - device
+      - id
+      - role
+    SessionDeviceInputRequest:
+      type: object
+      description: Entrée de la liste intégrale des appareils (capteur + rôle).
+      properties:
+        device:
+          type: string
+          format: uuid
+        role:
+          allOf:
+          - $ref: '#/components/schemas/SessionDeviceRoleEnum'
+          default: primary
+      required:
+      - device
+    SessionDeviceRoleEnum:
+      enum:
+      - primary
+      - secondary
+      type: string
+      description: |-
+        * `primary` - Primaire
+        * `secondary` - Secondaire
+    SessionList:
+      type: object
+      description: |-
+        Séance en liste : références compactes, sans canaux ni annotations.
+
+        ``warnings`` est calculé ici aussi (et pas seulement dans le détail) : un
+        client qui ne fait que lister sait déjà qu'une séance a été créée sans
+        placement déclaré.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        athlete:
+          allOf:
+          - $ref: '#/components/schemas/SessionsAthleteReference'
+          readOnly: true
+        session_type:
+          allOf:
+          - $ref: '#/components/schemas/SessionTypeEnum'
+          readOnly: true
+          title: Type de séance
+        setup:
+          allOf:
+          - $ref: '#/components/schemas/SessionsSetupReference'
+          readOnly: true
+        setup_declared:
+          type: boolean
+          readOnly: true
+          title: Placement déclaré
+          description: 'False si la séance a été créée sans setup : l''API renvoie
+            alors un avertissement ``setup_not_declared`` (réponse et détail).'
+        exercise:
+          allOf:
+          - $ref: '#/components/schemas/SessionsExerciseReference'
+          readOnly: true
+        workout:
+          allOf:
+          - $ref: '#/components/schemas/SessionsWorkoutReference'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SessionStatusEnum'
+          readOnly: true
+          title: Statut
+        source:
+          allOf:
+          - $ref: '#/components/schemas/SourceEnum'
+          readOnly: true
+        protocol_version:
+          type: integer
+          readOnly: true
+          title: Version du protocole
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Démarrée le
+        ended_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Terminée le
+        calibration_type:
+          readOnly: true
+          nullable: true
+          title: Type de calibration
+          description: |-
+            Requis si ``session_type = calibration`` (mêmes valeurs que Calibration.type).
+
+            * `mvc` - Contraction maximale volontaire
+            * `rest_baseline` - Baseline au repos
+          oneOf:
+          - $ref: '#/components/schemas/CalibrationTypeEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        warnings:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+      - athlete
+      - calibration_type
+      - created_at
+      - ended_at
+      - exercise
+      - id
+      - protocol_version
+      - session_type
+      - setup
+      - setup_declared
+      - source
+      - started_at
+      - status
+      - warnings
+      - workout
+    SessionStatusEnum:
+      enum:
+      - created
+      - recording
+      - completed
+      - cancelled
+      - failed
+      type: string
+      description: |-
+        * `created` - Créée
+        * `recording` - Enregistrement
+        * `completed` - Terminée
+        * `cancelled` - Annulée
+        * `failed` - Échouée
+    SessionTypeEnum:
+      enum:
+      - training
+      - calibration
+      - test
+      type: string
+      description: |-
+        * `training` - Entraînement
+        * `calibration` - Calibration
+        * `test` - Test
+    SessionsAthleteReference:
+      type: object
+      description: Référence compacte d'un profil sportif (``id`` + ``sport``).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sport:
+          type: string
+          readOnly: true
+          title: Sport principal
+      required:
+      - id
+      - sport
+    SessionsDeviceModelReference:
+      type: object
+      description: Référence compacte d'un modèle de capteur (``id``, ``manufacturer``,
+        ``name``).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        manufacturer:
+          type: string
+          readOnly: true
+          title: Fabriquant
+        name:
+          type: string
+          readOnly: true
+          title: Nom du modèle
+      required:
+      - id
+      - manufacturer
+      - name
+    SessionsDeviceReference:
+      type: object
+      description: Référence compacte d'un capteur (``id``, nom, modèle).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+        device_model:
+          allOf:
+          - $ref: '#/components/schemas/SessionsDeviceModelReference'
+          readOnly: true
+      required:
+      - device_model
+      - id
+      - name
+    SessionsExerciseReference:
+      type: object
+      description: Référence compacte d'un exercice (``id``, ``name``, ``movement_type``).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+        movement_type:
+          allOf:
+          - $ref: '#/components/schemas/MovementTypeEnum'
+          readOnly: true
+          title: Type de mouvement
+      required:
+      - id
+      - movement_type
+      - name
+    SessionsMuscleReference:
+      type: object
+      description: Référence compacte d'un muscle (``id``, ``name``, ``muscle_group``).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+        muscle_group:
+          type: string
+          format: uuid
+          readOnly: true
+          title: Groupe musculaire
+      required:
+      - id
+      - muscle_group
+      - name
+    SessionsSetupReference:
+      type: object
+      description: Référence compacte d'une version de setup (``id``, ``name``, ``version``).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+        version:
+          type: integer
+          readOnly: true
+      required:
+      - id
+      - name
+      - version
+    SessionsWorkoutReference:
+      type: object
+      description: Référence compacte d'un plan d'entraînement (``id``, ``name``).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Nom
+      required:
+      - id
+      - name
     SetChannelsRequest:
       type: object
       description: |-
@@ -6703,6 +8650,32 @@ components:
         * `left` - Gauche
         * `right` - Droite
         * `na` - Non applicable
+    SourceEnum:
+      enum:
+      - mobile
+      - pc
+      - import
+      type: string
+      description: |-
+        * `mobile` - Mobile
+        * `pc` - PC
+        * `import` - Import
+    SuggestedSetup:
+      type: object
+      description: |-
+        Réponse de ``GET /athletes/{id}/sessions/suggested-setup/``.
+
+        ``setup`` est la référence compacte du placement de la DERNIÈRE séance du
+        sportif (proposition « même placement que la dernière fois ? ») — ou
+        ``null`` si le sportif n'a pas encore de séance, ou si sa dernière séance a
+        été créée sans setup (rien à proposer).
+      properties:
+        setup:
+          allOf:
+          - $ref: '#/components/schemas/SessionsSetupReference'
+          nullable: true
+      required:
+      - setup
     Team:
       type: object
       description: Équipe (vue par ses membres).
@@ -6819,14 +8792,6 @@ components:
       required:
       - access
       - refresh
-    TypeEnum:
-      enum:
-      - mvc
-      - rest_baseline
-      type: string
-      description: |-
-        * `mvc` - Contraction maximale volontaire
-        * `rest_baseline` - Baseline au repos
     User:
       type: object
       description: Profil utilisateur (GET/PATCH ``/users/me/``).
