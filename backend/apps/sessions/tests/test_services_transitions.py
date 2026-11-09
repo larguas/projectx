@@ -194,10 +194,11 @@ class TestCompletedHook:
 
 class TestTransitionConcurrency:
     # ``transaction=True`` : les deux threads doivent voir des verrous réels, hors
-    # de la transaction de rollback de pytest-django. Le flush post-test effacerait
-    # sinon les données seedées (migrations de données) dans la base réutilisée
-    # (``--reuse-db``) : ``serialized_rollback=True`` fait restaurer l'état de la
-    # base tel qu'au début de session après chaque test (mécanisme Django).
+    # de la transaction de rollback de pytest-django. Le flush post-test efface
+    # les données seedées (migrations de données) de la base réutilisée
+    # (``--reuse-db``) : le conftest racine ré-applique le seed après chaque test
+    # transactionnel, et ``serialized_rollback=True`` redonne à ce test un état
+    # propre (snapshot de la base au moment de sa création).
     @pytest.mark.django_db(transaction=True, serialized_rollback=True)
     def test_concurrent_complete_and_cancel_only_one_wins(self):
         """Deux transitions simultanées : sérialisées par ``select_for_update``,
