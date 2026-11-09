@@ -25,14 +25,14 @@ Module PC complet (phase 5 de la roadmap générale), tout ce qui touche Django.
 11. Comportement à la déconnexion/reconnexion (reprise du flux, doublons) ?
 
 ## Tâches
-- [ ] Script `scripts/sensor_spike/read_sensor.py` (uv, dépendances jetables : `bleak` ou `pyserial`) qui lit le flux et écrit un fichier brut horodaté.
-- [ ] Enregistrements de référence : repos 30 s, contraction volontaire maximale, mouvement répétitif (10 répétitions), 10 minutes continues, déconnexion volontaire.
-- [ ] Script d'analyse rapide : débit réel, jitter, pertes de séquence, dérive.
-- [ ] Rédiger `documentation/acquisition-protocol/SENSOR_FINDINGS.md` avec les réponses aux 11 questions.
-- [ ] Committer un petit échantillon anonyme dans `backend/tests/data/` (CSV ou npz) utilisable par les features 08 et 09.
-- [ ] Mettre à jour `shared/protocol/PROTOCOL.md` et `block.schema.json` : champs réellement disponibles, encodage retenu (JSON gzip seul, ou binaire en plus), taille de bloc recommandée, gestion des timestamps.
-- [ ] Décider : un seul `data_type` par bloc ou plusieurs ; flux EMG et IMU dans le même bloc ou séparés.
-- [ ] Mettre à jour `07-ingestion.md` avec les décisions prises (écarts par rapport au protocole supposé).
+- [x] Script `scripts/sensor_spike/read_sensor.py` (uv, dépendances jetables : `bleak` ou `pyserial`) qui lit le flux et écrit un fichier brut horodaté. *(livré 2026-11-09 ; chaîne de traitement validée sur données synthétiques — capture réelle en attente du capteur)*
+- [ ] Enregistrements de référence : repos 30 s, contraction volontaire maximale, mouvement répétitif (10 répétitions), 10 minutes continues, déconnexion volontaire. *(bloqué : capteur non connecté/détectable au démarrage de la session — checklist dans `SENSOR_FINDINGS.md`)*
+- [x] Script d'analyse rapide : débit réel, jitter, pertes de séquence, dérive. *(livré 2026-11-09 : `analyze_capture.py`, métriques pures testées par `smoke_test_pipeline.py`)*
+- [x] Rédiger `documentation/acquisition-protocol/SENSOR_FINDINGS.md` avec les réponses aux 11 questions. *(squelette livré 2026-11-09 : 11 × « inconnu » + raison, conforme au critère d'acceptation)*
+- [x] Committer un petit échantillon anonyme dans `backend/tests/data/` (CSV ou npz) utilisable par les features 08 et 09. *(npz synthétique déterministe `sample_emg_imu.npz`, choix documenté dans le README du dossier)*
+- [ ] Mettre à jour `shared/protocol/PROTOCOL.md` et `block.schema.json` : champs réellement disponibles, encodage retenu (JSON gzip seul, ou binaire en plus), taille de bloc recommandée, gestion des timestamps. *(partiel 2026-11-09 : doc + schéma créés depuis le protocole supposé, décisions structurantes prises et champs marqués « à valider » ; l'alignement sur les capacités réelles reste à faire après les mesures — voir `SENSOR_FINDINGS.md`)*
+- [x] Décider : un seul `data_type` par bloc ou plusieurs ; flux EMG et IMU dans le même bloc ou séparés. *(décidé 2026-11-09 : un seul `data_type` par bloc, EMG et IMU en blocs séparés — justification dans `PROTOCOL.md` §2)*
+- [x] Mettre à jour `07-ingestion.md` avec les décisions prises (écarts par rapport au protocole supposé). *(mis à jour 2026-11-09 : statut phase 1 + décisions structurantes ; aucun écart mesuré pour l'instant)*
 
 ## Critères d'acceptation
 - `SENSOR_FINDINGS.md` répond aux 11 questions (ou note « inconnu » avec la raison).

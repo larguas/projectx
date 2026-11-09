@@ -19,7 +19,33 @@ Feature 06b (spike capteur) terminée : le protocole ci-dessous est une hypothè
 Traitement du signal (feature 08), analytics (feature 09), import CSV (feature 11).
 
 ## Protocole
-- Documenter dans `shared/protocol/` : `PROTOCOL.md` et `block.schema.json` (JSON Schema, `protocol_version: "1.0"`).
+
+> **Statut après le spike 06b (2026-11-09, phase 1)** : capteur non connecté ni détectable
+> au démarrage de la session → les 11 questions du spike sont « inconnu » avec raison
+> (`documentation/acquisition-protocol/SENSOR_FINDINGS.md`). `shared/protocol/PROTOCOL.md`
+> et `block.schema.json` existent, construits **depuis l'hypothèse de départ**, chaque champ
+> étant marqué « confirmé / à valider ». Avant de coder cette feature : faire les
+> enregistrements du spike (checklist dans `SENSOR_FINDINGS.md`) et aligner le protocole —
+> **le spike prime** sur ce document.
+
+### Décisions structurantes prises au spike 06b
+
+- **Un seul `data_type` par bloc** ; flux EMG et IMU dans des **blocs séparés** (`emg_*` / `imu_*`).
+  Justification : cohérence avec `DataBlock` (unique `(session, device, data_type, sequence_number)`),
+  la segmentation par `(session, device, data_type)` et une numérotation de séquence non ambiguë.
+- **Trois horodatages** : `acquisition_timestamp` (début du bloc, horloge appareil/client),
+  `client_sent_at` (envoi, horloge client), `received_at` (ajouté par le serveur) ;
+  `sample_timestamps` optionnel si le capteur expose des timestamps par échantillon (spike Q6).
+- **Transport JSON gzip** par défaut ; format binaire (`application/x-emg-block`) seulement si les
+  mesures du spike (Q1/Q2/Q9) montrent que le JSON ne suffit pas.
+- `dropped_samples` : les pertes capteur→client sont **déclarées par le client**, pas devinées côté serveur.
+- Politique de dépréciation : une version supportée au moins un cycle de release majeur ; le schéma est
+  strict (`additionalProperties: false`) → nouveau champ optionnel = version mineure (ex. `1.0` → `1.1`).
+
+Écarts par rapport au protocole supposé : **aucun écart constaté** (pas encore de mesure) ; tout écart
+mesuré sera noté ici et dans `PROTOCOL.md`.
+
+- Documenter dans `shared/protocol/` : `PROTOCOL.md` et `block.schema.json` (JSON Schema, `protocol_version: "1.0"`). ✅ créé le 2026-11-09 (spike 06b, phase 1) — à aligner sur les mesures avant de coder.
 - Champs (voir spec §5) : `protocol_version`, `session_id`, `device_id`, `sequence_number`, `acquisition_timestamp` (début du bloc, horloge de l'appareil/client, UTC), `client_sent_at` (horloge du client au moment de l'envoi), `sample_rate`, `data_type`, `channels[]` (`channel_id`, `units`, `samples`), `calibration`, `metadata` (`source`, `connection_type`, `device_model`, `client_version`).
 - Optionnels : `sample_timestamps`, `dropped_samples` (déclaré par le client).
 - Le serveur ajoute `received_at`.
