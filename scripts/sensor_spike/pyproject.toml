@@ -1,0 +1,35 @@
+[project]
+name = "sensor-spike"
+version = "0.1.0"
+description = "Spike 06b — lecture et analyse du capteur EMG/IMU réel (jetable, indépendant du backend Django)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # Question 1 du spike (connexion réelle) non tranchée : le capteur n'était pas
+    # branché/détectable au démarrage de la session (ni USB, ni série, ni adaptateur BLE).
+    # Les deux transports sont donc inclus ; retirer l'inutilisé une fois Q1 mesurée.
+    "bleak>=0.22",       # transport BLE (notifications GATT)
+    "pyserial>=3.5",     # transport série / USB-CDC (/dev/ttyUSB*, /dev/ttyACM*)
+    "numpy>=2.0",        # analyse des captures (débit, jitter, pertes, dérive)
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
