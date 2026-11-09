@@ -28,6 +28,10 @@ urlpatterns = [
     # modules des apps hôtes — mêmes vues, app ``setups``).
     path("api/v1/setups/", include("apps.setups.urls")),
     path("api/v1/calibrations/", include("apps.setups.calibration_urls")),
+    # Feature 06 : séances d'acquisition (la route imbriquée
+    # ``/athletes/{id}/sessions/suggested-setup/`` vit dans les urls de
+    # l'app hôte ``athletes`` — même vue, app ``sessions``).
+    path("api/v1/sessions/", include("apps.sessions.urls")),
     # Contrat OpenAPI versionné dans le repo (décision n°14) : `make schema`.
     path(
         "api/schema/",
