@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "apps.exercises",
     "apps.setups",
     "apps.workouts",
+    "apps.sessions",
     "apps.audit",
 ]
 
@@ -198,9 +199,15 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": r"/api/v[0-9]+",
     "COMPONENT_SPLIT_REQUEST": True,
-    # Un seul nom d'enum pour les choix ["ok", "error"] du health (app/database/redis).
+    # Noms explicites d'ensembles de choix : sans cela, drf-spectacular retombe
+    # sur des noms hachés (``Status483Enum``) quand le même ensemble apparaît dans
+    # plusieurs composants (séparateur liste/détail de la feature 06) ou sous deux
+    # noms de champ (``type`` / ``calibration_type`` — mêmes choix, feature 05b/06).
     "ENUM_NAME_OVERRIDES": {
         "HealthCheckState": ["ok", "error"],
+        "SessionStatusEnum": "apps.sessions.models.Session.Status",
+        "SessionDeviceRoleEnum": "apps.sessions.models.SessionDevice.Role",
+        "CalibrationTypeEnum": "apps.setups.models.Calibration.Type",
     },
 }
 

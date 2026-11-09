@@ -16,15 +16,15 @@
   et rattachée au setup de la séance (cf.
   ``apps.setups.services.applicable_calibrations``).
 
-Immutabilité des setups utilisés — point d'extension UNIQUE pour la
-feature 06 : la propriété ``SensorSetup.is_used``, aujourd'hui portée par le
-marqueur ``used_at``. La feature 06 posera ce marqueur à la première
-utilisation via une mise à jour en base ciblée (``objects.filter(...).update()``)
-— qui ne passe PAS par ``save()`` — et pourra étendre ``is_used`` pour vérifier
-directement les séances. Toute mutation (service ET ``save()`` modèle) refuse
-un setup avec ``is_used == True`` : un setup utilisé par une séance ne change
-jamais. Les basculements d'état (``used_at``, ``is_current``) passent donc
-toujours par des mises à jour en base ciblées, jamais par ``save()``.
+Immutabilité des setups utilisés : la propriété ``SensorSetup.is_used`` est
+portée par le marqueur ``used_at``, posé à la première utilisation par une
+séance via une mise à jour en base ciblée (``objects.filter(...).update()``)
+— qui ne passe PAS par ``save()`` — dans ``apps.sessions.services.create_session``
+(feature 06), et vérifie aussi l'existence effective d'une séance référençant
+le setup. Toute mutation (service ET ``save()`` modèle) refuse un setup avec
+``is_used == True`` : un setup utilisé par une séance ne change jamais. Les
+basculements d'état (``used_at``, ``is_current``) passent donc toujours par
+des mises à jour en base ciblées, jamais par ``save()``.
 """
 
 from pathlib import Path
@@ -123,13 +123,15 @@ class SensorSetup(TimestampedModel, UUIDModel):
     def is_used(self) -> bool:
         """Le setup est-il utilisé par au moins une séance ?
 
-        Point d'extension UNIQUE pour la feature 06 : dès que le modèle de
-        séance existera, cette propriété devra y vérifier l'existence d'une
-        référence (ex. ``self.sessions.exists()``). En attendant, l'état «
-        utilisé » est porté par le marqueur ``used_at``, posé en base (mise à
-        jour ciblée, pas de ``save()``) à la première utilisation.
+        Double vérification (feature 06) : le marqueur ``used_at`` — posé en
+        base (mise à jour ciblée, pas de ``save()``) à la première utilisation
+        par ``apps.sessions.services.create_session`` — OU l'existence
+        effective d'une séance référençant ce setup (filet de sécurité : un
+        setup référencé est figé même si le marqueur n'a pas été posé).
         """
-        return self.used_at is not None
+        if self.used_at is not None:
+            return True
+        return self.sessions.exists()
 
     def assert_editable(self) -> None:
         """Refuse toute modification d'un setup figé (utilisé par une séance).
@@ -273,9 +275,10 @@ class Calibration(TimestampedModel, UUIDModel):
     de la séance (condition vérifiée côté service par
     ``applicable_calibrations``, qui filtre sur le setup).
 
-    ``source_session`` (FK vers la séance de calibration) sera ajoutée en
-    feature 06 : volontairement absente ici, conformément au périmètre du
-    doc 05b.
+    ``source_session`` (FK nullable vers la séance de calibration d'origine,
+    ajoutée en feature 06 — point ouvert du doc 05b clos ici) documente la
+    provenance : la création effective de la Calibration depuis les signaux
+    reste hors périmètre (feature 09, via le hook ``on_session_completed``).
     """
 
     class Type(models.TextChoices):
@@ -298,6 +301,14 @@ class Calibration(TimestampedModel, UUIDModel):
         SetupChannel,
         verbose_name="canal de setup",
         on_delete=models.PROTECT,
+        related_name="calibrations",
+    )
+    source_session = models.ForeignKey(
+        "training_sessions.Session",
+        verbose_name="séance de calibration d'origine",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="calibrations",
     )
     type = models.CharField("type", max_length=16, choices=Type.choices)
